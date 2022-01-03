@@ -70,12 +70,19 @@
   # =>
   '(:symbol @{:bc 6 :bl 6 :ec 7 :el 6} "a")
 
+  (-> (find-zloc-for-lc (-> (l/ast "[]")
+                            j/zip-down)
+                        [1 1])
+      j/node)
+  # =>
+  '(:bracket-tuple @{:bc 1 :bl 1 :ec 3 :el 1})
+
   )
 
 (defn find-absorbee
   [container-zloc]
-  # look to the right, skipping whitespace if comment is found, abort
-  # (not skip)
+  # look to the right, skipping whitespace
+  # if comment is found, abort (not skip)
   (var curr-zloc (j/right container-zloc))
   (var result nil)
   (var cnt 0)
@@ -225,30 +232,75 @@
     (eprintf "did not find zloc for: [%p %p]" l c)
     (break nil))
   #
-  (j/up a-zloc))
+  (if (container? a-zloc)
+    a-zloc
+    (j/up a-zloc)))
+
+(comment
+
+  (-> (l/ast "[]")
+      j/zip-down
+      (find-container-for-lc 1 1)
+      j/node)
+  # =>
+  '(:bracket-tuple @{:bc 1 :bl 1 :ec 3 :el 1})
+
+  (-> (l/ast "[]")
+      j/zip-down
+      (find-container-for-lc 1 2)
+      j/node)
+  # =>
+  '(:bracket-tuple @{:bc 1 :bl 1 :ec 3 :el 1})
+
+  (def src
+    ``
+    (comment
+
+      [] :a :b :x :y
+
+      )
+
+    (comment
+
+      )
+
+    ``)
+
+  (-> (l/ast src)
+      j/zip-down
+      (find-container-for-lc 3 4)
+      j/node)
+  # =>
+  '(:bracket-tuple @{:bc 3 :bl 3 :ec 5 :el 3})
+
+  )
 
 # XXX: could make a more general thing that doesn't depend on details
 #      of janet-zipper, but not doing so for the moment
 (defn remove-left-inclusive-n
   ``
-  Starting with `zloc`, remove `n` nodes moving to the left after
-  each removal.
-
-  Before removing a node, it is replaced with a non-container
-  node so that post-removal, the current location is one to the
-  left of the original starting location.
+  Remove `n` nodes ranging from `zloc` (inclusive) through n-1 left
+  nodes.
 
   It's the caller's responsibility to ensure that `n` is a
   sensible value.
   ``
   [zloc n]
   (var curr-zloc zloc)
+  # arrange for the left n-1 nodes to be non-container nodes
+  (for i 0 (dec n)
+    (set curr-zloc
+         (j/left curr-zloc)))
+  (for i 0 (dec n)
+    (set curr-zloc
+         (-> curr-zloc
+             (j/replace [:whitespace @{} " "])
+             j/right)))
+  # now remove n nodes
   (for i 0 n
     (set curr-zloc
-         # replace each removal candidate with a non-container so that
-         # removal leads to a straight-forward "destination"
-         (-> (j/replace curr-zloc [:whitespace @{} " "])
-             j/remove)))
+         (j/remove curr-zloc)))
+  # XXX: it's kind of unclear where the current location is...
   curr-zloc)
 
 (comment
@@ -282,16 +334,18 @@
 
 (defn absorb-right
   [[cursor-l cursor-c] src]
+  (eprintf "src: %p" src)
   (var curr-zloc
     (-> (l/ast src)
         j/zip-down))
-  (eprintf "node: %p" (j/node curr-zloc))
+  (eprintf "node for src: %p" (j/node curr-zloc))
   # find container
   (def container-zloc
     (find-container-for-lc curr-zloc cursor-l cursor-c))
   (unless (container? container-zloc)
     (eprintf "did not find container")
     (break nil))
+  (eprintf "container node: %p" (j/node container-zloc))
   # find what to absorb
   (def absorbee-pair
     (find-absorbee container-zloc))
@@ -301,10 +355,13 @@
   (def absorbee-node
     (j/node (get absorbee-pair 0)))
   # absorb absorbee
+  (set curr-zloc container-zloc)
+  (when (pos? (length (j/children curr-zloc)))
+    (eprintf "container node: %p" (j/node curr-zloc))
+    (set curr-zloc
+         (j/append-child curr-zloc [:whitespace @{} " "])))
   (set curr-zloc
-       (-> container-zloc
-           (j/append-child [:whitespace @{} " "])
-           (j/append-child absorbee-node)))
+       (j/append-child curr-zloc absorbee-node))
   (unless curr-zloc
     (eprintf "did not absorb absorbee")
     (break nil))
@@ -317,7 +374,7 @@
   # remove nodes starting at the original absorbee and back to one
   # after the container
   (def [absorbee-zloc cnt] absorbee-pair)
-  (eprintf "node: %p" (j/node absorbee-zloc))
+  (eprintf "node for absorbee: %p" (j/node absorbee-zloc))
   (eprintf "cnt: %p" cnt)
   (set curr-zloc
        (remove-left-inclusive-n absorbee-zloc cnt))
@@ -370,5 +427,47 @@
 
   (def a 2)
   ``
+
+  (def src
+    ``
+    [] :a :b :x :y
+    ``)
+
+  (absorb-right [1 1] src)
+  # =>
+  ``
+  [:a] :b :x :y
+  ``
+
+   (def src
+    ``
+    (comment
+
+      [] :a :b :x :y
+
+      )
+
+    (comment
+
+      )
+
+    ``)
+
+  (absorb-right [3 4] src)
+  # =>
+  ``
+  (comment
+
+    [:a] :b :x :y
+
+    )
+
+  (comment
+
+    )
+
+  ``
+
+  )
 
   )
