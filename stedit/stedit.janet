@@ -227,6 +227,59 @@
   #
   (j/up a-zloc))
 
+# XXX: could make a more general thing that doesn't depend on details
+#      of janet-zipper, but not doing so for the moment
+(defn remove-left-inclusive-n
+  ``
+  Starting with `zloc`, remove `n` nodes moving to the left after
+  each removal.
+
+  Before removing a node, it is replaced with a non-container
+  node so that post-removal, the current location is one to the
+  left of the original starting location.
+
+  It's the caller's responsibility to ensure that `n` is a
+  sensible value.
+  ``
+  [zloc n]
+  (var curr-zloc zloc)
+  (for i 0 n
+    (set curr-zloc
+         # replace each removal candidate with a non-container so that
+         # removal leads to a straight-forward "destination"
+         (-> (j/replace curr-zloc [:whitespace @{} " "])
+             j/remove)))
+  curr-zloc)
+
+(comment
+
+  (-> (l/ast "[:a :b] :x :y :z")
+      j/zip-down
+      j/right
+      j/right
+      j/right
+      j/right
+      # at :y
+      (remove-left-inclusive-n (+ 2 2))
+      j/root
+      l/code)
+  # =>
+  "[:a :b] :z"
+
+  (-> (l/ast "[:a :b] :x :y :z")
+      j/zip-down
+      j/down
+      j/right
+      j/right
+      # at :b
+      (remove-left-inclusive-n (+ 2 1))
+      j/root
+      l/code)
+  # =>
+  "[] :x :y :z"
+
+  )
+
 (defn absorb-right
   [[cursor-l cursor-c] src]
   (var curr-zloc
@@ -264,15 +317,10 @@
   # remove nodes starting at the original absorbee and back to one
   # after the container
   (def [absorbee-zloc cnt] absorbee-pair)
-  (set curr-zloc absorbee-zloc)
-  (eprintf "node: %p" (j/node curr-zloc))
+  (eprintf "node: %p" (j/node absorbee-zloc))
   (eprintf "cnt: %p" cnt)
-  # replace each removal candidate with a non-container so that
-  # removal leads to a straight-forward "destination"
-  (for i 0 cnt
-    (set curr-zloc
-         (-> (j/replace curr-zloc [:whitespace @{} " "])
-             j/remove)))
+  (set curr-zloc
+       (remove-left-inclusive-n absorbee-zloc cnt))
   # replacement text
   (def new-text
     (-> curr-zloc
