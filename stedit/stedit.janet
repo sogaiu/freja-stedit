@@ -145,6 +145,18 @@
   )
 
 (defn container?
+  ``
+  Returns true if `zloc` is a container node, false otherwise.
+
+  A container node is one of the following types:
+
+  * array
+  * bracket array
+  * tuple
+  * bracket tuple
+  * table
+  * struct
+  ``
   [zloc]
   (->> (first (j/node zloc))
        (get {:array true
@@ -202,6 +214,10 @@
   )
 
 (defn find-container-for-lc
+  ``
+  Within `zloc`, return the z-location with the smallest container node
+  spanning the location given by line `l` and column `c`.
+  ``
   [zloc l c]
   (def a-zloc
     (find-zloc-for-lc zloc [l c]))
