@@ -166,6 +166,7 @@
                         (inc curr-c)]
              new-text (se/absorb-right cursor-lc region)]
     # XXX
+    (printf "cursor-lc (1-based): %p" cursor-lc)
     (printf "new-text: %p" new-text)
     # move out of the way of upcoming region deletion
     (goto-char gb start)
@@ -180,9 +181,58 @@
         [:control :shift :0]
         (comp dh/reset-blink absorb-right))
 
+(varfn eject-right
+  [gb]
+  (def current (point gb))
+  (def curr-l
+    (gb/line-number gb current))
+  (def curr-c
+    (gb/column! gb current))
+  (var start nil)
+  (var start-l nil)
+  (var end nil)
+  # find bounds of enough text
+  (defer (goto-char gb current)
+    # find and remember beginning of region to operate on
+    (begin-of-top-level gb)
+    (set start (point gb))
+    (set start-l (gb/line-number gb start))
+    # find and remember end of region to operate on
+    (goto-char gb current)
+    (before-next-top-level gb)
+    (set end (point gb)))
+  (def region
+       (string/slice (gb/content gb) start end))
+  # XXX
+  (printf "start-l: %p" start-l)
+  (printf "curr-l: %p" curr-l)
+  (printf "curr-c: %p" curr-c)
+  (printf "region: %p" region)
+  # compute replacement text
+  # only replace if successful
+  (when-let [# 1-based line and column for zipper
+             cursor-lc [(inc (- curr-l start-l))
+                        (inc curr-c)]
+             new-text (se/eject-right cursor-lc region)]
+    # XXX
+    (printf "cursor-lc (1-based): %p" cursor-lc)
+    (printf "new-text: %p" new-text)
+    # move out of the way of upcoming region deletion
+    (goto-char gb start)
+    (gb/delete-region! gb start end)
+    (gb/insert-string-at-pos! gb start new-text)
+    # restore cursor position -- XXX: hopefully this works?
+    (goto-char gb current))
+  gb)
+
+(put-in dh/gb-binds
+        # XXX: this is control left paren
+        [:control :shift :9]
+        (comp dh/reset-blink eject-right))
+
 (comment
 
-  [:a :b] :x :y
+  [] :a :b :x :y
 
   )
 

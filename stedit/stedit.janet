@@ -470,4 +470,164 @@
 
   )
 
+(defn find-ejectee
+  [container-zloc]
+  # start at the rightmost child of the container
+  (var curr-zloc
+    (-> (j/down container-zloc)
+        j/rightmost))
+  (unless curr-zloc
+    (break nil))
+  # look to the left, skipping whitespace
+  # if comment is found, abort (not skip)
+  (var result nil)
+  (while curr-zloc
+    (match (j/node curr-zloc)
+      # abort
+      [:comment]
+      (break)
+      # skip
+      [:whitespace]
+      nil
+      # absorbee
+      (do
+        (set result curr-zloc)
+        (break)))
+    (set curr-zloc
+         (j/left curr-zloc)))
+  result)
+
+(comment
+
+  (def src
+    ``
+    [:a :b] :c
+    ``)
+
+  (def ejectee-zloc
+    (-> (l/ast src)
+        j/zip-down
+        find-ejectee))
+
+  (j/node ejectee-zloc)
+  # =>
+  '(:keyword @{:bc 5 :bl 1 :ec 7 :el 1} ":b")
+
+  )
+
+# XXX: what about ejecting to the top-level?
+(defn eject-right
+  [[cursor-l cursor-c] src]
+  (var curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "node: %p" (j/node curr-zloc))
+  # find container
+  (def container-zloc
+    (find-container-for-lc curr-zloc cursor-l cursor-c))
+  (unless (container? container-zloc)
+    (eprintf "did not find container")
+    (break nil))
+  (eprintf "container node: %p" (j/node container-zloc))
+  # find what to eject
+  (def ejectee-zloc
+    (find-ejectee container-zloc))
+  (unless ejectee-zloc
+    (eprintf "did not find ejectee (1)")
+    (break nil))
+  (def ejectee-node
+    (j/node ejectee-zloc))
+  # eject ejectee
+  (set curr-zloc
+       (-> container-zloc
+           (j/insert-right ejectee-node)
+           (j/insert-right [:whitespace @{} " "])))
+  (unless curr-zloc
+    (eprintf "did not eject ejectee")
+    (break nil))
+  # remove original ejectee
+  (def ejectee-zloc
+    (find-ejectee curr-zloc))
+  (unless ejectee-zloc
+    (eprintf "did not find ejectee (2)")
+    (break nil))
+  # remove nodes starting at the original ejectee and up through
+  # but not including the previous / left non-whitespace / non-comment
+  # node
+  (eprintf "node: %p" (j/node ejectee-zloc))
+  # XXX: this should work because if there's something to the left
+  #      it should be whitespace, and if there's nothing to the
+  #      left, there's nothing else to remove anyway
+  (set curr-zloc
+       (-> ejectee-zloc
+           j/remove))
+  (when (j/left ejectee-zloc)
+    (def temp-zloc curr-zloc)
+    (var marked 0)
+    (while curr-zloc
+      (match (j/node curr-zloc)
+        [:whitespace]
+        (++ marked)
+        #
+        [:comment]
+        (errorf "unexpected :comment: %p" (j/node curr-zloc))
+        #
+        (break))
+      (if-let [left-zloc (j/left curr-zloc)]
+        (set curr-zloc left-zloc)
+        (break)))
+    (set curr-zloc temp-zloc)
+    (for i 0 marked
+      (set curr-zloc
+           (j/remove curr-zloc))))
+  # replacement text
+  (def new-text
+    (-> curr-zloc
+        j/root
+        l/code))
+  (eprintf "new-text: %p" new-text)
+  new-text)
+
+(comment
+
+  (def src
+    ``
+    (defn my-fn
+      [x]
+      (+ x 1) :a)
+
+    (def a 2)
+    ``)
+
+  (eject-right [3 5] src)
+  # =>
+  ``
+  (defn my-fn
+    [x]
+    (+ x) 1 :a)
+
+  (def a 2)
+  ``
+
+  (def src
+    ``
+    (defn my-fn
+      [x]
+      (+ x 1) :a :b)
+
+    (def a 2)
+    ``)
+
+  (->> src
+       (eject-right [3 5])
+       (eject-right [3 5]))
+  # =>
+  ``
+  (defn my-fn
+    [x]
+    (+) x 1 :a :b)
+
+  (def a 2)
+  ``
+
   )
