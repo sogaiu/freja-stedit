@@ -188,30 +188,6 @@
   # =>
   true
 
-  (-> (l/ast "@[1 1 2]")
-      j/zip-down
-      container?)
-  # =>
-  true
-
-  (-> (l/ast "@(:x :y :z)")
-      j/zip-down
-      container?)
-  # =>
-  true
-
-  (-> (l/ast "{:a 1}")
-      j/zip-down
-      container?)
-  # =>
-  true
-
-  (-> (l/ast "@{:a 1}")
-      j/zip-down
-      container?)
-  # =>
-  true
-
   (-> (l/ast ":a")
       j/zip-down
       container?)
@@ -251,27 +227,6 @@
       j/node)
   # =>
   '(:bracket-tuple @{:bc 1 :bl 1 :ec 3 :el 1})
-
-  (def src
-    ``
-    (comment
-
-      [] :a :b :x :y
-
-      )
-
-    (comment
-
-      )
-
-    ``)
-
-  (-> (l/ast src)
-      j/zip-down
-      (find-container-for-lc 3 4)
-      j/node)
-  # =>
-  '(:bracket-tuple @{:bc 3 :bl 3 :ec 5 :el 3})
 
   )
 
@@ -426,46 +381,6 @@
     (+ x 1 :a :b))
 
   (def a 2)
-  ``
-
-  (def src
-    ``
-    [] :a :b :x :y
-    ``)
-
-  (absorb-right [1 1] src)
-  # =>
-  ``
-  [:a] :b :x :y
-  ``
-
-   (def src
-    ``
-    (comment
-
-      [] :a :b :x :y
-
-      )
-
-    (comment
-
-      )
-
-    ``)
-
-  (absorb-right [3 4] src)
-  # =>
-  ``
-  (comment
-
-    [:a] :b :x :y
-
-    )
-
-  (comment
-
-    )
-
   ``
 
   )
