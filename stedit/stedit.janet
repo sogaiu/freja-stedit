@@ -201,23 +201,25 @@
 
   )
 
+(defn find-container-for-lc
+  [zloc l c]
+  (def a-zloc
+    (find-zloc-for-lc zloc [l c]))
+  (unless a-zloc
+    (eprintf "did not find zloc for: [%p %p]" l c)
+    (break nil))
+  #
+  (j/up a-zloc))
+
 (defn absorb-right
   [[cursor-l cursor-c] src]
   (var curr-zloc
     (-> (l/ast src)
         j/zip-down))
   (eprintf "node: %p" (j/node curr-zloc))
-  #
-  (def cursor-zloc
-    (find-zloc-for-lc curr-zloc [cursor-l cursor-c]))
-  (unless cursor-zloc
-    (eprintf "did not find zloc for cursor")
-    (break nil))
-  #
-  (eprintf "cursor: %p" (j/node cursor-zloc))
-  # find container node
+  # find container
   (def container-zloc
-    (j/up cursor-zloc))
+    (find-container-for-lc curr-zloc cursor-l cursor-c))
   (unless (container? container-zloc)
     (eprintf "did not find container")
     (break nil))
