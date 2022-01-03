@@ -226,8 +226,8 @@
   gb)
 
 (put-in dh/gb-binds
-        # XXX: this is control left paren
-        [:control :shift :9]
+        # XXX: this is control right bracket
+        [:control :shift :right-bracket]
         (comp dh/reset-blink eject-right))
 
 (comment
