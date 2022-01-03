@@ -107,12 +107,15 @@
   #
   (when (not (end-of-buffer? gb))
     (var pos (point gb))
+    (def last-line-number
+      (gb/line-number gb (gb/gb-length gb)))
     (forward-line gb)
     (if (begin-of-top-level-char? (char-after gb (point gb)))
       (do
         (gb/backward-char gb)
         (set pos (point gb)))
-      (while true
+      (while (< (gb/line-number gb (point gb))
+                last-line-number)
         (forward-line gb)
         (cond
           (begin-of-top-level-char? (char-after gb (point gb)))
@@ -125,7 +128,10 @@
           (do
             (set pos (point gb))
             (break)))))
-    (goto-char gb pos)))
+    (if (= (gb/line-number gb (point gb))
+           last-line-number)
+      (gb/end-of-buffer gb)
+      (goto-char gb pos))))
 
 (varfn absorb-right
   [gb]
