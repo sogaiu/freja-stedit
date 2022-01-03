@@ -72,7 +72,7 @@
   [:a] :b :x :y
   ``
 
-   (def src
+  (def src
     ``
     (comment
 
@@ -84,7 +84,7 @@
 
       )
 
-    ``)
+   ``)
 
   (absorb-right [3 4] src)
   # =>
