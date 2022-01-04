@@ -546,3 +546,75 @@
   ``
 
   )
+
+(defn forward-expr
+  [[line column] src]
+  (def curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "node: %p" (j/node curr-zloc))
+  (def cursor-zloc
+    (find-zloc-for-lc curr-zloc [line column]))
+  (unless cursor-zloc
+    (eprintf "did not find zloc for: [%p %p]" line column)
+    (break nil))
+  (if-let [right-zloc (j/right-until cursor-zloc
+                                     |(match (j/node $)
+                                        [:whitespace]
+                                        nil
+                                        #
+                                        [:comment]
+                                        nil
+                                        #
+                                        true))
+           {:bc c :bl l} (get (j/node right-zloc) 1)]
+    [l c]
+    nil))
+
+(comment
+
+  (forward-expr [1 7] "(+ 1000 1)")
+  # =>
+  '(1 9)
+
+  (forward-expr [1 7] "(+ 1111)")
+  # =>
+  nil
+
+  )
+
+(defn backward-expr
+  [[line column] src]
+  (def curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "node: %p" (j/node curr-zloc))
+  (def cursor-zloc
+    (find-zloc-for-lc curr-zloc [line column]))
+  (unless cursor-zloc
+    (eprintf "did not find zloc for: [%p %p]" line column)
+    (break nil))
+  (if-let [left-zloc (j/left-until cursor-zloc
+                                   |(match (j/node $)
+                                      [:whitespace]
+                                      nil
+                                      #
+                                      [:comment]
+                                      nil
+                                      #
+                                      true))
+           {:bc c :bl l} (get (j/node left-zloc) 1)]
+    [l c]
+    nil))
+
+(comment
+
+  (backward-expr [1 7] "(+ 1000 1)")
+  # =>
+  '(1 2)
+
+  (backward-expr [1 1] "(+ 1 11)")
+  # =>
+  nil
+
+  )

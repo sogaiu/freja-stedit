@@ -893,6 +893,46 @@
 
   )
 
+(defn left-until
+  ``
+  Try to move left from `zloc`, calling `pred` for each
+  left sibling.  If the `pred` call has a truthy result,
+  return the corresponding left sibling.
+  Otherwise, return nil.
+  ``
+  [zloc pred]
+  (when-let [left-sib (left zloc)]
+    (if (pred left-sib)
+      left-sib
+      (left-until left-sib pred))))
+
+(comment
+
+  (-> [:code
+       [:tuple
+        [:comment "# hi there"] [:whitespace "\n"]
+        [:symbol "+"] [:whitespace " "]
+        [:number "1"] [:whitespace " "]
+        [:number "2"]]]
+      zip
+      down
+      right
+      down
+      rightmost
+      (left-until |(match (node $)
+                      [:comment]
+                      false
+                      #
+                      [:whitespace]
+                      false
+                      #
+                      true))
+      node)
+  # =>
+  [:number "1"]
+
+  )
+
 (defn search-from
   ``
   Successively call `pred` on z-locations starting at `zloc`
