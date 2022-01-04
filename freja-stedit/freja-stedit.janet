@@ -369,3 +369,53 @@
         [:control :alt :b]
         (comp dh/reset-blink backward-expr))
 
+(varfn delete-forward-expr
+  [gb]
+  (def current (point gb))
+  (def curr-l
+    (gb/line-number gb current))
+  (def curr-c
+    (gb/column! gb current))
+  (var start nil)
+  (var start-l nil)
+  (var end nil)
+  # find bounds of enough text
+  (defer (goto-char gb current)
+    # find and remember beginning of region to examine
+    (begin-of-top-level gb)
+    (set start (point gb))
+    (set start-l (gb/line-number gb start))
+    # find and remember end of region to examine
+    (goto-char gb current)
+    (before-next-top-level gb)
+    (set end (point gb)))
+  (def region
+       (string/slice (gb/content gb) start end))
+  # XXX
+  (printf "start-l: %p" start-l)
+  (printf "curr-l: %p" curr-l)
+  (printf "curr-c: %p" curr-c)
+  (printf "region: %p" region)
+  # determine end of region to delete
+  (when-let [# 1-based line and column for zipper
+             cursor-lc [(inc (- curr-l start-l))
+                        (inc curr-c)]
+             # 1-based
+             [end-l-1 end-c-1] (se/delete-forward-expr cursor-lc region)
+             # 0-based
+             [end-l-o end-c-o] [(dec end-l-1) (dec end-c-1)]
+             # offset
+             [end-l end-c] [(+ end-l-o start-l) end-c-o]]
+    # XXX
+    (printf "cursor-lc (1-based): %p" cursor-lc)
+    (def new-end (find-pos-for-line-and-column gb end-l end-c))
+    # move out of the way of upcoming region deletion
+    (goto-char gb current)
+    (gb/delete-region! gb current new-end)
+    # restore cursor position -- XXX: hopefully this works?
+    (goto-char gb current))
+  gb)
+
+(put-in dh/gb-binds
+        [:control :alt :k]
+        (comp dh/reset-blink delete-forward-expr))

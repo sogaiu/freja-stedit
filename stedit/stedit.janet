@@ -618,3 +618,39 @@
   nil
 
   )
+
+(defn delete-forward-expr
+  [[line column] src]
+    (def curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "node: %p" (j/node curr-zloc))
+  (def cursor-zloc
+    (find-zloc-for-lc curr-zloc [line column]))
+  (unless cursor-zloc
+    (eprintf "did not find zloc for: [%p %p]" line column)
+    (break nil))
+  (def last-sibling-zloc
+    (j/rightmost cursor-zloc))
+  (unless last-sibling-zloc
+    (eprintf "did not find last sibling")
+    (break nil))
+  (let [{:ec c :el l} (get (j/node last-sibling-zloc) 1)]
+    [l c]))
+
+(comment
+
+  (delete-forward-expr [1 6] "(+ 1 2)")
+  # =>
+  '(1 7)
+
+  (delete-forward-expr [1 6]
+                       ``
+                       (+ 1 2
+                            3 5
+                              7)
+                       ``)
+  # =>
+  '(3 9)
+
+  )
