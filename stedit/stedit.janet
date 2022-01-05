@@ -567,7 +567,7 @@
                                         nil
                                         #
                                         true))
-           {:bc c :bl l} (get (j/node right-zloc) 1)]
+           {:ec c :el l} (get (j/node right-zloc) 1)]
     [l c]
     nil))
 
