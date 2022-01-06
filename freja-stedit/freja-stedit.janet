@@ -187,6 +187,33 @@
         [:control :shift :0]
         (comp dh/reset-blink absorb-right))
 
+(varfn find-pos-for-line-and-column
+  [gb line column]
+  # goto line
+  # * determine current line
+  (def current-line-number
+    (gb/current-line-number gb))
+  # * determine whether destination line is above, below, or some
+  #  and adjust line if necessary
+  (cond
+    (< line current-line-number)
+    (for i 0 (- current-line-number line)
+      (backward-line gb))
+    #
+    (> line current-line-number)
+    (for i 0 (- line current-line-number)
+      (forward-line gb))
+    #
+    nil)
+  (var pos (point gb))
+  # goto column
+  # * determine current column
+  (def current-column (gb/column! gb pos))
+  # * adjust value using gb/move-n
+  (gb/move-n gb (- column current-column))
+  # get position
+  (point gb))
+
 (varfn eject-right
   [gb]
   (def current (point gb))
@@ -219,16 +246,26 @@
   (when-let [# 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
-             new-text (se/eject-right cursor-lc region)]
+             # 1-based
+             [new-text [new-l-1 new-c-1]]
+             (se/eject-right cursor-lc region)
+             # 0-based
+             [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
+             # offset
+             [new-l new-c] [(+ new-l-o start-l) new-c-o]]
     # XXX
     (printf "cursor-lc (1-based): %p" cursor-lc)
+    (printf "new-l (1-based): %p" new-l)
+    (printf "new-c (1-based): %p" new-c)
     (printf "new-text: %p" new-text)
     # move out of the way of upcoming region deletion
     (goto-char gb start)
     (gb/delete-region! gb start end)
     (gb/insert-string-at-pos! gb start new-text)
-    # restore cursor position -- XXX: hopefully this works?
-    (goto-char gb current))
+    # possibly adjust cursor position -- XXX: hopefully this works?
+    (def new-pos
+      (find-pos-for-line-and-column gb new-l new-c))
+    (goto-char gb new-pos))
   gb)
 
 (put-in dh/gb-binds
@@ -245,33 +282,6 @@
 (comment
 
   )
-
-(varfn find-pos-for-line-and-column
-  [gb line column]
-  # goto line
-  # * determine current line
-  (def current-line-number
-    (gb/current-line-number gb))
-  # * determine whether destination line is above, below, or some
-  #  and adjust line if necessary
-  (cond
-    (< line current-line-number)
-    (for i 0 (- current-line-number line)
-      (backward-line gb))
-    #
-    (> line current-line-number)
-    (for i 0 (- line current-line-number)
-      (forward-line gb))
-    #
-    nil)
-  (var pos (point gb))
-  # goto column
-  # * determine current column
-  (def current-column (gb/column! gb pos))
-  # * adjust value using gb/move-n
-  (gb/move-n gb (- column current-column))
-  # get position
-  (point gb))
 
 (varfn forward-expr
   [gb]

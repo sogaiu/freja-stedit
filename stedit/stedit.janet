@@ -501,7 +501,31 @@
         j/root
         l/code))
   (eprintf "new-text: %p" new-text)
-  new-text)
+  # should cursor position be adjusted
+  (def [container-start-line container-start-column
+        old-container-end-line old-container-end-column]
+    (let [bounds (get (j/node container-zloc) 1)]
+      [(bounds :bl) (bounds :bc)
+       (bounds :el) (bounds :ec)]))
+  (def new-zloc
+    (-> (l/ast new-text)
+        j/zip-down))
+  (def new-container-zloc
+    (find-container-for-lc new-zloc
+                           container-start-line container-start-column))
+  # XXX: should not happen?
+  (unless (container? new-container-zloc)
+    (eprintf "unexpectedly did not find new container"))
+  (var new-cursor [cursor-l cursor-c])
+  (let [new-container-span (lc-for-zloc new-container-zloc)]
+    (eprintf "new container-span: %p" new-container-span)
+    (unless (spans? new-container-span
+                    [cursor-l cursor-c cursor-l cursor-c])
+      (eprintf "new container didn't span")
+      (set new-cursor
+           [(get new-container-span 2)
+            (dec (get new-container-span 3))])))
+  [new-text new-cursor])
 
 (comment
 
@@ -516,13 +540,14 @@
 
   (eject-right [3 5] src)
   # =>
-  ``
-  (defn my-fn
-    [x]
-    (+ x) 1 :a)
+  [``
+   (defn my-fn
+     [x]
+     (+ x) 1 :a)
 
-  (def a 2)
-  ``
+   (def a 2)
+   ``
+   [3 5]]
 
   (def src
     ``
@@ -533,17 +558,21 @@
     (def a 2)
     ``)
 
-  (->> src
-       (eject-right [3 5])
-       (eject-right [3 5]))
-  # =>
-  ``
-  (defn my-fn
-    [x]
-    (+) x 1 :a :b)
+  (def [new-src [new-cursor-l new-cursor-c]]
+    (->> src
+         (eject-right [3 9])))
 
-  (def a 2)
-  ``
+  (->> new-src
+       (eject-right [new-cursor-l new-cursor-c]))
+  # =>
+  [``
+   (defn my-fn
+     [x]
+     (+) x 1 :a :b)
+
+   (def a 2)
+   ``
+   [3 5]]
 
   )
 
