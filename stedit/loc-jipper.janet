@@ -28,10 +28,12 @@
      [:symbol @{} "+"] [:whitespace @{} " "]
      [:number @{} "1"] [:whitespace @{} " "]
      [:number @{} "2"]])
-  # => true
+  # =>
+  true
 
   (has-children? [:number @{} "8"])
-  # => false
+  # =>
+  false
 
   )
 
@@ -70,8 +72,16 @@
   (def [the-node the-state]
     (zip root-node))
 
-  (deep= the-node root-node)
-  # => true
+  the-node
+  # =>
+  root-node
+
+  (merge {} the-state)
+  # =>
+  @{}
+
+  )
+
 
   (deep= (merge {} the-state)
          @{})
@@ -98,25 +108,22 @@
 
 (comment
 
-  (deep=
-    #
-    (-> (l/ast "(+ 1 3)")
-        zip-down
-        z/node)
-    #
-    '(:tuple @{:bc 1 :bl 1
-               :ec 8 :el 1}
-             (:symbol @{:bc 2 :bl 1
-                        :ec 3 :el 1} "+")
-             (:whitespace @{:bc 3 :bl 1
-                            :ec 4 :el 1} " ")
-             (:number @{:bc 4 :bl 1
-                        :ec 5 :el 1} "1")
-             (:whitespace @{:bc 5 :bl 1
-                            :ec 6 :el 1} " ")
-             (:number @{:bc 6 :bl 1
-                        :ec 7 :el 1} "3")))
-  # => true
+  (-> (l/ast "(+ 1 3)")
+      zip-down
+      z/node)
+  # =>
+  '(:tuple @{:bc 1 :bl 1
+             :ec 8 :el 1}
+           (:symbol @{:bc 2 :bl 1
+                      :ec 3 :el 1} "+")
+           (:whitespace @{:bc 3 :bl 1
+                          :ec 4 :el 1} " ")
+           (:number @{:bc 4 :bl 1
+                      :ec 5 :el 1} "1")
+           (:whitespace @{:bc 5 :bl 1
+                          :ec 6 :el 1} " ")
+           (:number @{:bc 6 :bl 1
+                      :ec 7 :el 1} "3"))
 
   )
 
@@ -152,7 +159,8 @@
                       #
                       true))
       z/node)
-  # => [:symbol @{} "+"]
+  # =>
+  [:symbol @{} "+"]
 
   )
 
@@ -186,7 +194,8 @@
       z/down
       right-skip-wsc
       z/node)
-  # => [:symbol @{:bc 1 :bl 2 :ec 2 :el 2} "+"]
+  # =>
+  [:symbol @{:bc 1 :bl 2 :ec 2 :el 2} "+"]
 
   )
 
@@ -219,7 +228,8 @@
                       #
                       true))
       z/node)
-  # => [:symbol @{:bc 1 :bl 2 :ec 2 :el 2} "+"]
+  # =>
+  [:symbol @{:bc 1 :bl 2 :ec 2 :el 2} "+"]
 
   )
 
@@ -250,7 +260,8 @@
       right-skip-wsc
       left-skip-wsc
       z/node)
-  # => [:symbol @{:bc 1 :bl 2 :ec 2 :el 2} "+"]
+  # =>
+  [:symbol @{:bc 1 :bl 2 :ec 2 :el 2} "+"]
 
   )
 
