@@ -70,6 +70,36 @@
     nil
     (gb/move-n gb (- target-i start-i))))
 
+(varfn skip-whitespace-backward
+  "Skips backward while there is whitespace."
+  [gb]
+  (def {:caret caret} gb)
+
+  (when (zero? caret)
+    (break))
+
+  (var target-i (dec caret))
+  (def start-i (dec caret))
+
+  (def f
+    (fiber/new
+      (fn []
+        (gb/index-char-backward-start gb start-i))))
+
+  (loop [[i c] :iterate (resume f)]
+    (when (and (not= (chr "\n") c)
+               (not= (chr " ") c)
+               (not= (chr "\t") c))
+      (set target-i i)
+      (break)))
+
+  (def diff
+    (- target-i start-i))
+
+  # XXX: does this cover all cases?
+  (unless (= start-i target-i)
+    (gb/move-n gb (inc diff))))
+
 (defn begin-of-top-level-char?
   [char]
   (def botl-chars
@@ -302,6 +332,11 @@
     # find and remember end of region to examine
     (goto-char gb current)
     (before-next-top-level gb)
+    # XXX: hoping this is enough...hmm, what about comments...
+    (skip-whitespace-forward gb)
+    (gb/forward-char gb)
+    # going further to handle case of top-level absorb
+    (before-next-top-level gb)
     (set end (point gb)))
   (def region
        (string/slice (gb/content gb) start end))
@@ -344,6 +379,10 @@
   # find bounds of enough text
   (defer (goto-char gb current)
     # find and remember beginning of region to examine
+    (begin-of-top-level gb)
+    # XXX: hoping this is enough...hmm, what about comments...
+    (skip-whitespace-backward gb)
+    (gb/backward-char gb)
     (begin-of-top-level gb)
     (set start (point gb))
     (set start-l (gb/line-number gb start))
