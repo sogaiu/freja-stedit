@@ -430,7 +430,6 @@
 
   )
 
-# XXX: what about ejecting to the top-level?
 (defn eject-right
   [[cursor-l cursor-c] src]
   (var curr-zloc
