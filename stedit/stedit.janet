@@ -28,7 +28,7 @@
         :bc bc
         :el el
         :ec ec}
-    (j/span zloc))
+    (j/attrs zloc))
   [bl bc el ec])
 
 (defn find-zloc-for-lc
@@ -503,9 +503,9 @@
   # should cursor position be adjusted
   (def [container-start-line container-start-column
         old-container-end-line old-container-end-column]
-    (let [bounds (j/span container-zloc)]
-      [(bounds :bl) (bounds :bc)
-       (bounds :el) (bounds :ec)]))
+    (let [attrs (j/attrs container-zloc)]
+      [(attrs :bl) (attrs :bc)
+       (attrs :el) (attrs :ec)]))
   (def new-zloc
     (-> (l/ast new-text)
         j/zip-down))
@@ -595,7 +595,7 @@
                                         nil
                                         #
                                         true))
-           {:ec c :el l} (j/span right-zloc)]
+           {:ec c :el l} (j/attrs right-zloc)]
     [l c]
     nil))
 
@@ -631,7 +631,7 @@
                                       nil
                                       #
                                       true))
-           {:bc c :bl l} (j/span left-zloc)]
+           {:bc c :bl l} (j/attrs left-zloc)]
     [l c]
     nil))
 
@@ -663,7 +663,7 @@
   (unless last-sibling-zloc
     (eprintf "did not find last sibling")
     (break nil))
-  (let [{:ec c :el l} (j/span last-sibling-zloc)]
+  (let [{:ec c :el l} (j/attrs last-sibling-zloc)]
     [l c]))
 
 (comment

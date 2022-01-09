@@ -82,10 +82,11 @@
 
   )
 
-(defn span
+(defn attrs
   ``
-  Return the span table for the node of a z-location.  The span table
-  describes the bounds of the node by 1-based line and column numbers.
+  Return the attributes table for the node of a z-location.  The
+  attributes table contains at least bounds of the node by 1-based line
+  and column numbers.
   ``
   [zloc]
   (get (z/node zloc) 1))
@@ -103,7 +104,7 @@
   (-> (l/ast "(+ 1 3)")
       zip
       z/down
-      span)
+      attrs)
   # =>
   @{:bc 1 :bl 1 :ec 8 :el 1}
 
