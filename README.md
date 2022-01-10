@@ -20,9 +20,9 @@ The [freja editor](https://github.com/saikyun/freja).
 
 * `delete-forward-expr` - `ctrl-alt-k`
 
-* `eject-right` - `ctrl-shift-]` or `ctrl-}`
+* `eject-forward` - `ctrl-shift-]` or `ctrl-}`
 
-* `absorb-right` - `ctrl-shift-0` or `ctrl-)`
+* `absorb-forward` - `ctrl-shift-0` or `ctrl-)`
 
 ## Naming
 

@@ -287,7 +287,7 @@
 
   )
 
-(defn absorb-right
+(defn absorb-forward
   [[cursor-l cursor-c] src]
   (eprintf "src: %p" src)
   (var curr-zloc
@@ -352,7 +352,7 @@
     (def a 2)
     ``)
 
-  (absorb-right [3 6] src)
+  (absorb-forward [3 6] src)
   # =>
   ``
   (defn my-fn
@@ -372,8 +372,8 @@
     ``)
 
   (->> src
-       (absorb-right [3 6])
-       (absorb-right [3 6]))
+       (absorb-forward [3 6])
+       (absorb-forward [3 6]))
   # =>
   ``
   (defn my-fn
@@ -430,7 +430,7 @@
 
   )
 
-(defn eject-right
+(defn eject-forward
   [[cursor-l cursor-c] src]
   (var curr-zloc
     (-> (l/ast src)
@@ -537,7 +537,7 @@
     (def a 2)
     ``)
 
-  (eject-right [3 5] src)
+  (eject-forward [3 5] src)
   # =>
   [``
    (defn my-fn
@@ -559,10 +559,10 @@
 
   (def [new-src [new-cursor-l new-cursor-c]]
     (->> src
-         (eject-right [3 9])))
+         (eject-forward [3 9])))
 
   (->> new-src
-       (eject-right [new-cursor-l new-cursor-c]))
+       (eject-forward [new-cursor-l new-cursor-c]))
   # =>
   [``
    (defn my-fn

@@ -163,7 +163,7 @@
       (gb/end-of-buffer gb)
       (goto-char gb pos))))
 
-(varfn absorb-right
+(varfn absorb-forward
   [gb]
   (def current (point gb))
   (def curr-l
@@ -200,7 +200,7 @@
   (when-let [# 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
-             new-text (se/absorb-right cursor-lc region)]
+             new-text (se/absorb-forward cursor-lc region)]
     # XXX
     (printf "cursor-lc (1-based): %p" cursor-lc)
     (printf "new-text: %p" new-text)
@@ -215,7 +215,7 @@
 (put-in dh/gb-binds
         # XXX: this is control right paren
         [:control :shift :0]
-        (comp dh/reset-blink absorb-right))
+        (comp dh/reset-blink absorb-forward))
 
 (varfn find-pos-for-line-and-column
   [gb line column]
@@ -244,7 +244,7 @@
   # get position
   (point gb))
 
-(varfn eject-right
+(varfn eject-forward
   [gb]
   (def current (point gb))
   (def curr-l
@@ -278,7 +278,7 @@
                         (inc curr-c)]
              # 1-based
              [new-text [new-l-1 new-c-1]]
-             (se/eject-right cursor-lc region)
+             (se/eject-forward cursor-lc region)
              # 0-based
              [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
              # offset
@@ -301,7 +301,7 @@
 (put-in dh/gb-binds
         # XXX: this is control right bracket
         [:control :shift :right-bracket]
-        (comp dh/reset-blink eject-right))
+        (comp dh/reset-blink eject-forward))
 
 (comment
 

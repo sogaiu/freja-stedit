@@ -58,7 +58,7 @@
 
   )
 
-# absorb-right
+# absorb-forward
 (comment
 
   (def src
@@ -66,7 +66,7 @@
     [] :a :b :x :y
     ``)
 
-  (absorb-right [1 1] src)
+  (absorb-forward [1 1] src)
   # =>
   ``
   [:a] :b :x :y
@@ -86,7 +86,7 @@
 
    ``)
 
-  (absorb-right [3 4] src)
+  (absorb-forward [3 4] src)
   # =>
   ``
   (comment
