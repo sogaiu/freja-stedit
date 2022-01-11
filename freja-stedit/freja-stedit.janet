@@ -299,7 +299,7 @@
   gb)
 
 (put-in dh/gb-binds
-        # XXX: this is control right bracket
+        # XXX: this is control right curly brace
         [:control :shift :right-bracket]
         (comp dh/reset-blink eject-forward))
 
