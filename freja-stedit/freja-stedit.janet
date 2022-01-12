@@ -432,7 +432,9 @@
   (var start nil)
   (var start-l nil)
   (var end nil)
-  # need to do this for top-level things
+  # the following skipping is for coping with top-level situations.
+  # it will be accounted for later if it turns out the starting point was
+  # not at the top-level
   (skip-whitespace-forward gb true)
   (var current (point gb))
   # find bounds of enough text
@@ -445,41 +447,32 @@
     (goto-char gb current)
     (before-next-top-level gb)
     (set end (point gb)))
-  (def region
-       (string/slice (gb/content gb) start end))
-  # original < start => original was at top-level
-  (unless (< original start)
-    # adjust current so that deletion affects appropriate whitespace
+  # not at top-level, so adjust current to match original
+  (when (not (< original start))
     (set current original))
-  (def curr-l
-    (gb/line-number gb current))
-  (def curr-c
-    (gb/column! gb current))
-  # XXX
-  (printf "start-l: %p" start-l)
-  (printf "curr-l: %p" curr-l)
-  (printf "curr-c: %p" curr-c)
-  (printf "region: %p" region)
-  # determine end of region to delete
-  (when-let [# 1-based line and column for zipper
+  # delete region if appropriate
+  (when-let [curr-l (gb/line-number gb current)
+             curr-c (gb/column! gb current)
+             # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
+             region (string/slice (gb/content gb) start end)
              # 1-based
              [end-l-1 end-c-1] (se/delete-forward-expr cursor-lc region)
              # 0-based
              [end-l-o end-c-o] [(dec end-l-1) (dec end-c-1)]
              # offset
              [end-l end-c] [(+ end-l-o start-l) end-c-o]]
-    # XXX
-    (printf "cursor-lc (1-based): %p" cursor-lc)
-    (def new-end (find-pos-for-line-and-column gb end-l end-c))
+    (def new-end
+      (find-pos-for-line-and-column gb end-l end-c))
     # move out of the way of upcoming region deletion
     (goto-char gb current)
-    (gb/delete-region! gb current new-end)
-    # restore cursor position -- XXX: hopefully this works?
-    (goto-char gb original))
+    (gb/delete-region! gb current new-end))
+  # restore cursor position
+  (goto-char gb original)
   gb)
 
 (put-in dh/gb-binds
         [:control :alt :k]
         (comp dh/reset-blink delete-forward-expr))
+
