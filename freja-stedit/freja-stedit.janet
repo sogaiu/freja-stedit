@@ -373,6 +373,43 @@
         [:control :alt :b]
         (comp dh/reset-blink backward-expr))
 
+(varfn backward-up
+  [gb]
+  (def current (point gb))
+  # find bounds of enough text
+  (def [start start-l end]
+    (defer (goto-char gb current)
+      # find and remember beginning of region to examine
+      (begin-of-top-level gb)
+      (def start (point gb))
+      (def start-l (gb/line-number gb start))
+      # find and remember end of region to examine
+      (goto-char gb current)
+      (before-next-top-level gb)
+      (def end (point gb))
+      [start start-l end]))
+  # move backward and up if appropriate
+  (when-let [curr-l (gb/line-number gb current)
+             curr-c (gb/column! gb current)
+             # 1-based line and column for zipper
+             cursor-lc [(inc (- curr-l start-l))
+                        (inc curr-c)]
+             region (string/slice (gb/content gb) start end)
+             # 1-based
+             new-lc-maybe (se/backward-up cursor-lc region)
+             [new-l-1 new-c-1] new-lc-maybe
+             # 0-based
+             [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
+             # offset
+             [new-l new-c] [(+ new-l-o start-l) new-c-o]]
+    (goto-char gb
+               (find-pos-for-line-and-column gb new-l new-c)))
+  gb)
+
+(put-in dh/gb-binds
+        [:control :alt :u]
+        (comp dh/reset-blink backward-up))
+
 (varfn delete-forward-expr
   [gb]
   (def original (point gb))

@@ -685,3 +685,66 @@
   '(3 9)
 
   )
+
+(defn backward-up
+  [[line column] src]
+  (def curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "node: %p" (j/node curr-zloc))
+  (def container-zloc
+    (find-container-for-lc curr-zloc line column))
+  (unless container-zloc
+    (eprintf "did not find container for: [%p %p] (1)" line column)
+    (break nil))
+  (def {:bc c :bl l}
+    (j/attrs container-zloc))
+  (eprintf "container span: [%p %p]" l c)
+  (when (or (not= line l)
+            (not= column c))
+    (break [l c]))
+  (def outer-container-zloc
+    (j/up container-zloc))
+  (unless outer-container-zloc
+    (eprintf "did not find outer container")
+    (break nil))
+  (def {:bc oc :bl ol}
+    (j/attrs outer-container-zloc))
+  (eprintf "outer container span: [%p %p]" ol oc)
+  (eprintf "outer container node: %p" (j/node outer-container-zloc))
+  (def oc-node-type
+    (first (j/node outer-container-zloc)))
+  (if (not= :code oc-node-type)
+    [ol oc]
+    nil))
+
+(comment
+
+  (def src
+    "[:a :b :c]")
+
+  (backward-up [1 2] src)
+  # =>
+  [1 1]
+
+  (backward-up [1 6] src)
+  # =>
+  [1 1]
+
+  (backward-up [1 1] src)
+  # =>
+  nil
+
+  (def src
+    "[:a [:x :y]]")
+
+  (backward-up [1 6] src)
+  # =>
+  [1 5]
+
+  (backward-up [1 5] src)
+  # =>
+  [1 1]
+
+  )
+
