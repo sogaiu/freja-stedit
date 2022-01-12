@@ -515,11 +515,14 @@
   # XXX: should not happen?
   (unless (container? new-container-zloc)
     (eprintf "unexpectedly did not find new container"))
+  (eprintf "new-container node: %p" (j/node new-container-zloc))
   (var new-cursor [cursor-l cursor-c])
+  (eprintf "new-cursor: %p" new-cursor)
   (let [new-container-span (lc-for-zloc new-container-zloc)]
     (eprintf "new container-span: %p" new-container-span)
     (unless (spans? new-container-span
-                    [cursor-l cursor-c cursor-l cursor-c])
+                    # XXX: is this wrong?
+                    [cursor-l cursor-c cursor-l (inc cursor-c)])
       (eprintf "new container didn't span")
       (set new-cursor
            [(get new-container-span 2)

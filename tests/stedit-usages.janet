@@ -102,3 +102,22 @@
   ``
 
   )
+
+# eject-forward
+(comment
+
+  (def src
+    "[:a :b :x] :y")
+
+  (eject-forward [1 8] src)
+  # =>
+  '("[:a :b] :x :y" [1 7])
+
+  (def src
+    "[:a :b :x :y]")
+
+  (eject-forward [1 8] src)
+  # =>
+  '("[:a :b :x] :y" (1 8))
+
+  )
