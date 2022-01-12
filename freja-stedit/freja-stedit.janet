@@ -45,8 +45,13 @@
 
 # XXX: review
 (varfn skip-whitespace-forward
-  "Skips forward while there is whitespace on current line."
-  [gb]
+  ``
+  Skips forward while there is whitespace.  If optional argument
+  `nl-too` is truthy, also skip newlines.  Otherwise do not skip
+  newlines.
+  ``
+  [gb &opt nl-too]
+  (default nl-too false)
   (def {:caret caret} gb)
 
   (var target-i caret)
@@ -57,14 +62,17 @@
       (fn []
         (gb/index-char-start gb start-i))))
 
-  (when (= (chr "\n") (char-after gb caret))
+  (when (and (not nl-too)
+             (= (chr "\n") (char-after gb caret)))
     (break nil))
 
   (loop [[i c] :iterate (resume f)]
     (when (and (not= (chr " ") c)
                (not= (chr "\t") c))
-      (set target-i i)
-      (break)))
+      (when (and nl-too
+                 (not= (chr "\n") c))
+        (set target-i i)
+        (break))))
 
   (if (> target-i (gb/gb-length gb))
     nil
@@ -420,14 +428,17 @@
 
 (varfn delete-forward-expr
   [gb]
+  (def original (point gb))
+  (var start nil)
+  (var start-l nil)
+  (var end nil)
+  # need to do this for top-level things
+  (skip-whitespace-forward gb true)
   (def current (point gb))
   (def curr-l
     (gb/line-number gb current))
   (def curr-c
     (gb/column! gb current))
-  (var start nil)
-  (var start-l nil)
-  (var end nil)
   # find bounds of enough text
   (defer (goto-char gb current)
     # find and remember beginning of region to examine
@@ -462,7 +473,7 @@
     (goto-char gb current)
     (gb/delete-region! gb current new-end)
     # restore cursor position -- XXX: hopefully this works?
-    (goto-char gb current))
+    (goto-char gb original))
   gb)
 
 (put-in dh/gb-binds
