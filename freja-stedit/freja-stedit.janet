@@ -273,9 +273,8 @@
     (gb/delete-region! gb start end)
     (gb/insert-string-at-pos! gb start new-text)
     # possibly adjust cursor position -- XXX: hopefully this works?
-    (def new-pos
-      (find-pos-for-line-and-column gb new-l new-c))
-    (goto-char gb new-pos))
+    (goto-char gb
+               (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
 (put-in dh/gb-binds
@@ -326,8 +325,8 @@
              [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
              # offset
              [new-l new-c] [(+ new-l-o start-l) new-c-o]]
-    (def new-pos (find-pos-for-line-and-column gb new-l new-c))
-    (goto-char gb new-pos))
+    (goto-char gb
+               (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
 (put-in dh/gb-binds
@@ -366,8 +365,8 @@
              [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
              # offset
              [new-l new-c] [(+ new-l-o start-l) new-c-o]]
-    (def new-pos (find-pos-for-line-and-column gb new-l new-c))
-    (goto-char gb new-pos))
+    (goto-char gb
+               (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
 (put-in dh/gb-binds
@@ -410,9 +409,8 @@
              # 0-based
              [end-l-o end-c-o] [(dec end-l-1) (dec end-c-1)]
              # offset
-             [end-l end-c] [(+ end-l-o start-l) end-c-o]]
-    (def new-end
-      (find-pos-for-line-and-column gb end-l end-c))
+             [end-l end-c] [(+ end-l-o start-l) end-c-o]
+             new-end (find-pos-for-line-and-column gb end-l end-c)]
     # move out of the way of upcoming region deletion
     (goto-char gb current)
     (gb/delete-region! gb current new-end))
