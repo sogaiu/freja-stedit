@@ -174,44 +174,31 @@
 (varfn absorb-forward
   [gb]
   (def current (point gb))
-  (def curr-l
-    (gb/line-number gb current))
-  (def curr-c
-    (gb/column! gb current))
-  (var start nil)
-  (var start-l nil)
-  (var end nil)
   # find bounds of enough text
-  (defer (goto-char gb current)
-    # find and remember beginning of region to operate on
-    (begin-of-top-level gb)
-    (set start (point gb))
-    (set start-l (gb/line-number gb start))
-    # find and remember end of region to operate on
-    (goto-char gb current)
-    (before-next-top-level gb)
-    # XXX: hoping this is enough...hmm, what about comments...
-    (skip-whitespace-forward gb)
-    (gb/forward-char gb)
-    # going further to handle case of top-level absorb
-    (before-next-top-level gb)
-    (set end (point gb)))
-  (def region
-       (string/slice (gb/content gb) start end))
-  # XXX
-  (printf "start-l: %p" start-l)
-  (printf "curr-l: %p" curr-l)
-  (printf "curr-c: %p" curr-c)
-  (printf "region: %p" region)
-  # compute replacement text
-  # only replace if successful
-  (when-let [# 1-based line and column for zipper
+  (def [start start-l end]
+    (defer (goto-char gb current)
+      # find and remember beginning of region to operate on
+      (begin-of-top-level gb)
+      (def start (point gb))
+      (def start-l (gb/line-number gb start))
+      # find and remember end of region to operate on
+      (goto-char gb current)
+      (before-next-top-level gb)
+      # XXX: hoping this is enough...hmm, what about comments...
+      (skip-whitespace-forward gb)
+      (gb/forward-char gb)
+      # going further to handle case of top-level absorb
+      (before-next-top-level gb)
+      (def end (point gb))
+      [start start-l end]))
+  # replace if appropriate
+  (when-let [curr-l (gb/line-number gb current)
+             curr-c (gb/column! gb current)
+             # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
+             region (string/slice (gb/content gb) start end)
              new-text (se/absorb-forward cursor-lc region)]
-    # XXX
-    (printf "cursor-lc (1-based): %p" cursor-lc)
-    (printf "new-text: %p" new-text)
     # move out of the way of upcoming region deletion
     (goto-char gb start)
     (gb/delete-region! gb start end)
@@ -255,35 +242,25 @@
 (varfn eject-forward
   [gb]
   (def current (point gb))
-  (def curr-l
-    (gb/line-number gb current))
-  (def curr-c
-    (gb/column! gb current))
-  (var start nil)
-  (var start-l nil)
-  (var end nil)
   # find bounds of enough text
-  (defer (goto-char gb current)
-    # find and remember beginning of region to operate on
-    (begin-of-top-level gb)
-    (set start (point gb))
-    (set start-l (gb/line-number gb start))
-    # find and remember end of region to operate on
-    (goto-char gb current)
-    (before-next-top-level gb)
-    (set end (point gb)))
-  (def region
-       (string/slice (gb/content gb) start end))
-  # XXX
-  (printf "start-l: %p" start-l)
-  (printf "curr-l: %p" curr-l)
-  (printf "curr-c: %p" curr-c)
-  (printf "region: %p" region)
-  # compute replacement text
-  # only replace if successful
-  (when-let [# 1-based line and column for zipper
+  (def [start start-l end]
+    (defer (goto-char gb current)
+      # find and remember beginning of region to operate on
+      (begin-of-top-level gb)
+      (def start (point gb))
+      (def start-l (gb/line-number gb start))
+      # find and remember end of region to operate on
+      (goto-char gb current)
+      (before-next-top-level gb)
+      (def end (point gb))
+      [start start-l end]))
+  # replace if appropriate
+  (when-let [curr-l (gb/line-number gb current)
+             curr-c (gb/column! gb current)
+             # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
+             region (string/slice (gb/content gb) start end)
              # 1-based
              [new-text [new-l-1 new-c-1]]
              (se/eject-forward cursor-lc region)
@@ -291,11 +268,6 @@
              [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
              # offset
              [new-l new-c] [(+ new-l-o start-l) new-c-o]]
-    # XXX
-    (printf "cursor-lc (1-based): %p" cursor-lc)
-    (printf "new-l (1-based): %p" new-l)
-    (printf "new-c (1-based): %p" new-c)
-    (printf "new-text: %p" new-text)
     # move out of the way of upcoming region deletion
     (goto-char gb start)
     (gb/delete-region! gb start end)
