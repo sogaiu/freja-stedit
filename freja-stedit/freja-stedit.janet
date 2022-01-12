@@ -434,11 +434,7 @@
   (var end nil)
   # need to do this for top-level things
   (skip-whitespace-forward gb true)
-  (def current (point gb))
-  (def curr-l
-    (gb/line-number gb current))
-  (def curr-c
-    (gb/column! gb current))
+  (var current (point gb))
   # find bounds of enough text
   (defer (goto-char gb current)
     # find and remember beginning of region to examine
@@ -451,6 +447,14 @@
     (set end (point gb)))
   (def region
        (string/slice (gb/content gb) start end))
+  # original < start => original was at top-level
+  (unless (< original start)
+    # adjust current so that deletion affects appropriate whitespace
+    (set current original))
+  (def curr-l
+    (gb/line-number gb current))
+  (def curr-c
+    (gb/column! gb current))
   # XXX
   (printf "start-l: %p" start-l)
   (printf "curr-l: %p" curr-l)
