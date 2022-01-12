@@ -377,10 +377,6 @@
 (varfn backward-expr
   [gb]
   (def current (point gb))
-  (def curr-l
-    (gb/line-number gb current))
-  (def curr-c
-    (gb/column! gb current))
   (var start nil)
   (var start-l nil)
   (var end nil)
@@ -398,26 +394,19 @@
     (goto-char gb current)
     (before-next-top-level gb)
     (set end (point gb)))
-  (def region
-       (string/slice (gb/content gb) start end))
-  # XXX
-  (printf "start-l: %p" start-l)
-  (printf "curr-l: %p" curr-l)
-  (printf "curr-c: %p" curr-c)
-  (printf "region: %p" region)
-  # only move forward if successful
-  (when-let [# 1-based line and column for zipper
+  # move backward if appropriate
+  (when-let [curr-l (gb/line-number gb current)
+             curr-c (gb/column! gb current)
+             # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
+             region (string/slice (gb/content gb) start end)
              # 1-based
              [new-l-1 new-c-1] (se/backward-expr cursor-lc region)
              # 0-based
              [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
              # offset
              [new-l new-c] [(+ new-l-o start-l) new-c-o]]
-    # XXX
-    (printf "cursor-lc (1-based): %p" cursor-lc)
-    (printf "new position (0-based): [%p %p]" new-l new-c)
     (def new-pos (find-pos-for-line-and-column gb new-l new-c))
     (goto-char gb new-pos))
   gb)
