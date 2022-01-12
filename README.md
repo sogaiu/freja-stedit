@@ -18,7 +18,7 @@ The [freja editor](https://github.com/saikyun/freja).
 
 * `backward-expr` - `ctrl-alt-b`
 
-* `backward-up` - `ctrl-alt-u`
+* `backward-up-expr` - `ctrl-alt-u`
 
 * `delete-forward-expr` - `ctrl-alt-k`
 

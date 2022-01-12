@@ -373,7 +373,7 @@
         [:control :alt :b]
         (comp dh/reset-blink backward-expr))
 
-(varfn backward-up
+(varfn backward-up-expr
   [gb]
   (def current (point gb))
   # find bounds of enough text
@@ -396,7 +396,7 @@
                         (inc curr-c)]
              region (string/slice (gb/content gb) start end)
              # 1-based
-             new-lc-maybe (se/backward-up cursor-lc region)
+             new-lc-maybe (se/backward-up-expr cursor-lc region)
              [new-l-1 new-c-1] new-lc-maybe
              # 0-based
              [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
@@ -408,7 +408,7 @@
 
 (put-in dh/gb-binds
         [:control :alt :u]
-        (comp dh/reset-blink backward-up))
+        (comp dh/reset-blink backward-up-expr))
 
 (varfn delete-forward-expr
   [gb]

@@ -686,7 +686,7 @@
 
   )
 
-(defn backward-up
+(defn backward-up-expr
   [[line column] src]
   (def curr-zloc
     (-> (l/ast src)
@@ -723,26 +723,26 @@
   (def src
     "[:a :b :c]")
 
-  (backward-up [1 2] src)
+  (backward-up-expr [1 2] src)
   # =>
   [1 1]
 
-  (backward-up [1 6] src)
+  (backward-up-expr [1 6] src)
   # =>
   [1 1]
 
-  (backward-up [1 1] src)
+  (backward-up-expr [1 1] src)
   # =>
   nil
 
   (def src
     "[:a [:x :y]]")
 
-  (backward-up [1 6] src)
+  (backward-up-expr [1 6] src)
   # =>
   [1 5]
 
-  (backward-up [1 5] src)
+  (backward-up-expr [1 5] src)
   # =>
   [1 1]
 
