@@ -24,6 +24,8 @@ The [freja editor](https://github.com/saikyun/freja).
 
 * `forward-atom` - `ctrl-alt-shift-f`
 
+* `backward-atom` - `ctrl-alt-shift-b`
+
 * `forward-end-of-top-level` - `ctrl-alt-a`
 
 * `backward-start-of-top-level` - `ctrl-alt-e`
