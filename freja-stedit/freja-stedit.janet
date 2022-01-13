@@ -449,6 +449,26 @@
         [:control :alt :u]
         (comp dh/reset-blink backward-up-expr))
 
+(varfn backward-start-of-top-level
+  [gb]
+  (gb/backward-char gb)
+  (begin-of-top-level gb)
+  gb)
+
+(put-in dh/gb-binds
+        [:control :alt :a]
+        (comp dh/reset-blink backward-start-of-top-level))
+
+(varfn forward-end-of-top-level
+  [gb]
+  (gb/forward-char gb)
+  (before-next-top-level gb)
+  gb)
+
+(put-in dh/gb-binds
+        [:control :alt :e]
+        (comp dh/reset-blink forward-end-of-top-level))
+
 (varfn delete-forward-expr
   [gb]
   (def original (point gb))
