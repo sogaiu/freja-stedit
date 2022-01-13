@@ -756,7 +756,7 @@
   (eprintf "node: %p" (j/node curr-zloc))
   (def cursor-zloc
     (find-zloc-for-lc curr-zloc [line column]))
-  (unless curr-zloc
+  (unless cursor-zloc
     (eprintf "did not find zloc for cursor")
     (break nil))
   # container has particular handling
