@@ -748,3 +748,80 @@
 
   )
 
+(defn forward-down-expr
+  [[line column] src]
+  (def curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "node: %p" (j/node curr-zloc))
+  (def cursor-zloc
+    (find-zloc-for-lc curr-zloc [line column]))
+  (unless curr-zloc
+    (eprintf "did not find zloc for cursor")
+    (break nil))
+  # container has particular handling
+  (when (container? cursor-zloc)
+    (eprintf "cursor at a container")
+    (def {:ec ec :el el}
+      (j/attrs cursor-zloc))
+    (cond
+      # on closing delimiter, don't move
+      (and (= column ec)
+           (= line el)) # XXX: is this the right condition?
+      (break nil)
+      # has at least one child node
+      (j/has-children? (j/node cursor-zloc))
+      (let [first-child-zloc (j/down cursor-zloc)]
+        (def {:bc cbc :bl cbl}
+          (j/attrs first-child-zloc))
+        (break [cbl cbc]))
+      # no children, move to closing delimiter
+      (break [el ec])))
+  # not a container
+  (eprintf "cursor not at a container: %p" (j/node cursor-zloc))
+  (def forward-zloc
+    (j/right-skip-wsc cursor-zloc))
+  (unless forward-zloc
+    (eprintf "did not find non-wsc node in forward direction")
+    (break nil))
+  (eprintf "forward-zloc: %p" (j/node forward-zloc))
+  (unless (container? forward-zloc)
+    (eprintf "node in forward direction not a container")
+    (break nil))
+  (if (j/has-children? (j/node forward-zloc))
+    (do
+      (def {:bc bc :bl bl}
+        (j/attrs (j/down forward-zloc)))
+      (break [bl bc]))
+    (do
+      (def {:ec ec :el el}
+        (j/attrs forward-zloc))
+      (break [el ec]))))
+
+(comment
+
+  (def src
+    "[:a [:b :c]]")
+
+  (forward-down-expr [1 2] src)
+  # =>
+  [1 6]
+
+  (forward-down-expr [1 1] src)
+  # =>
+  [1 2]
+
+  (forward-down-expr [1 5] src)
+  # =>
+  [1 6]
+
+  (forward-down-expr [1 11] src)
+  # =>
+  nil
+
+  (forward-down-expr [1 12] src)
+  # =>
+  nil
+
+  )
+
