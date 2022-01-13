@@ -161,3 +161,43 @@
   [1 14]
 
   )
+
+# backward-expr
+(comment
+
+  (def src
+    ":a :b")
+
+  (backward-expr [1 4] src)
+  # =>
+  [1 1]
+
+  (def src
+    "[:a :b]")
+
+  (backward-expr [1 5] src)
+  # =>
+  [1 2]
+
+  (def src
+    "[:a :b] :c")
+
+  (backward-expr [1 9] src)
+  # =>
+  [1 1]
+
+  (def src
+    "[:a :b :c]")
+
+  (backward-expr [1 6] src)
+  # =>
+  [1 2]
+
+  (def src
+    "{:x [:a :b :c]}")
+
+  (backward-expr [1 14] src)
+  # =>
+  [1 9]
+
+  )
