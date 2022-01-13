@@ -14,6 +14,8 @@ The [freja editor](https://github.com/saikyun/freja).
 
 ## Commands
 
+### Navigation
+
 * `forward-expr` - `ctrl-alt-f`
 
 * `backward-expr` - `ctrl-alt-b`
@@ -29,6 +31,8 @@ The [freja editor](https://github.com/saikyun/freja).
 * `forward-end-of-top-level` - `ctrl-alt-e`
 
 * `backward-start-of-top-level` - `ctrl-alt-a`
+
+### Editing
 
 * `delete-forward-expr` - `ctrl-alt-k`
 
