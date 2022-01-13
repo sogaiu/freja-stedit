@@ -22,6 +22,8 @@ The [freja editor](https://github.com/saikyun/freja).
 
 * `backward-up-expr` - `ctrl-alt-u`
 
+* `forward-atom` - `ctrl-alt-shift-f`
+
 * `forward-end-of-top-level` - `ctrl-alt-a`
 
 * `backward-start-of-top-level` - `ctrl-alt-e`
