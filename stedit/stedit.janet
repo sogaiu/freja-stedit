@@ -748,6 +748,43 @@
 
   )
 
+(defn forward-atom
+  [[line column] src]
+  (def curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "node: %p" (j/node curr-zloc))
+  (def cursor-zloc
+    (find-zloc-for-lc curr-zloc [line column]))
+  (unless cursor-zloc
+    (eprintf "did not find zloc for cursor")
+    (break nil))
+  (var temp-zloc cursor-zloc)
+  (var found-target nil)
+  (while (not (j/end? temp-zloc))
+    (eprintf "temp-zloc node: %p" (j/node temp-zloc))
+    (set temp-zloc
+         (j/df-next temp-zloc))
+    (def node-type
+      (first (j/node temp-zloc)))
+    (unless (or (= :whitespace node-type)
+                (= :comment node-type)
+                (container? temp-zloc))
+      (set found-target true)
+      (break)))
+  (when found-target
+    (def {:ec ec :el el}
+      (j/attrs temp-zloc))
+    [el ec]))
+
+(comment
+
+  (forward-atom [1 2] "[:a [:b :c]]")
+  # =>
+  [1 8]
+
+  )
+
 (defn forward-down-expr
   [[line column] src]
   (def curr-zloc
