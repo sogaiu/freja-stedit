@@ -282,16 +282,6 @@
         [:control :shift :right-bracket]
         (comp dh/reset-blink eject-forward))
 
-(comment
-
-  [] :a :b :x :y
-
-  )
-
-(comment
-
-  )
-
 (varfn forward-expr
   [gb]
   (def current (point gb))
