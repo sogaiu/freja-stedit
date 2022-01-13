@@ -404,6 +404,47 @@
         [:control :alt :shift :f]
         (comp dh/reset-blink forward-atom))
 
+# XXX: can have issues within a form on the first line of the file
+(varfn backward-atom
+  [gb]
+  (def current (point gb))
+  # find bounds of enough text
+  (def [start end]
+    (defer (goto-char gb current)
+      # find and remember beginning of region to examine
+      (begin-of-top-level gb)
+      # XXX: hoping this is enough...hmm, what about comments...
+      (skip-whitespace-backward gb)
+      (gb/backward-char gb)
+      (begin-of-top-level gb)
+      (def start (point gb))
+      # find and remember end of region to examine
+      (goto-char gb current)
+      (before-next-top-level gb)
+      (def end (point gb))
+      [start end]))
+  # move forward if appropriate
+  (when-let [curr-l (gb/line-number gb current)
+             curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
+             # 1-based line and column for zipper
+             cursor-lc [(inc (- curr-l start-l))
+                        (inc curr-c)]
+             region (string/slice (gb/content gb) start end)
+             # 1-based
+             [new-l-1 new-c-1] (se/backward-atom cursor-lc region)
+             # 0-based
+             [new-l-o new-c-o] [(dec new-l-1) (dec new-c-1)]
+             # offset
+             [new-l new-c] [(+ new-l-o start-l) new-c-o]]
+    (goto-char gb
+               (find-pos-for-line-and-column gb new-l new-c)))
+  gb)
+
+(put-in dh/gb-binds
+        [:control :alt :shift :b]
+        (comp dh/reset-blink backward-atom))
+
 (varfn forward-down-expr
   [gb]
   (def current (point gb))
