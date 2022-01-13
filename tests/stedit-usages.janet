@@ -121,3 +121,43 @@
   '("[:a :b :x] :y" (1 8))
 
   )
+
+# forward-expr
+(comment
+
+  (def src
+    ":a :b")
+
+  (forward-expr [1 1] src)
+  # =>
+  [1 6]
+
+  (def src
+    "[:a :b]")
+
+  (forward-expr [1 1] src)
+  # =>
+  nil
+
+  (def src
+    "[:a :b] :c")
+
+  (forward-expr [1 1] src)
+  # =>
+  [1 11]
+
+  (def src
+    "[:a :b :c]")
+
+  (forward-expr [1 6] src)
+  # =>
+  [1 10]
+
+  (def src
+    "{:x [:a :b :c]}")
+
+  (forward-expr [1 9] src)
+  # =>
+  [1 14]
+
+  )
