@@ -175,12 +175,11 @@
   [gb]
   (def current (point gb))
   # find bounds of enough text
-  (def [start start-l end]
+  (def [start end]
     (defer (goto-char gb current)
       # find and remember beginning of region to operate on
       (begin-of-top-level gb)
       (def start (point gb))
-      (def start-l (gb/line-number gb start))
       # find and remember end of region to operate on
       (goto-char gb current)
       (before-next-top-level gb)
@@ -190,10 +189,11 @@
       # going further to handle case of top-level absorb
       (before-next-top-level gb)
       (def end (point gb))
-      [start start-l end]))
+      [start end]))
   # replace if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
@@ -243,20 +243,20 @@
   [gb]
   (def current (point gb))
   # find bounds of enough text
-  (def [start start-l end]
+  (def [start end]
     (defer (goto-char gb current)
       # find and remember beginning of region to operate on
       (begin-of-top-level gb)
       (def start (point gb))
-      (def start-l (gb/line-number gb start))
       # find and remember end of region to operate on
       (goto-char gb current)
       (before-next-top-level gb)
       (def end (point gb))
-      [start start-l end]))
+      [start end]))
   # replace if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
@@ -286,12 +286,11 @@
   [gb]
   (def current (point gb))
   # find bounds of enough text
-  (def [start start-l end]
+  (def [start end]
     (defer (goto-char gb current)
       # find and remember beginning of region to examine
       (begin-of-top-level gb)
       (def start (point gb))
-      (def start-l (gb/line-number gb start))
       # find and remember end of region to examine
       (goto-char gb current)
       (before-next-top-level gb)
@@ -301,10 +300,11 @@
       # going further to handle case of top-level absorb
       (before-next-top-level gb)
       (def end (point gb))
-      [start start-l end]))
+      [start end]))
   # move forward if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
@@ -327,7 +327,7 @@
   [gb]
   (def current (point gb))
   # find bounds of enough text
-  (def [start start-l end]
+  (def [start end]
     (defer (goto-char gb current)
       # find and remember beginning of region to examine
       (begin-of-top-level gb)
@@ -336,15 +336,15 @@
       (gb/backward-char gb)
       (begin-of-top-level gb)
       (def start (point gb))
-      (def start-l (gb/line-number gb start))
       # find and remember end of region to examine
       (goto-char gb current)
       (before-next-top-level gb)
       (def end (point gb))
-      [start start-l end]))
+      [start end]))
   # move backward if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
@@ -367,12 +367,11 @@
   [gb]
   (def current (point gb))
   # find bounds of enough text
-  (def [start start-l end]
+  (def [start end]
     (defer (goto-char gb current)
       # find and remember beginning of region to examine
       (begin-of-top-level gb)
       (def start (point gb))
-      (def start-l (gb/line-number gb start))
       # find and remember end of region to examine
       (goto-char gb current)
       (before-next-top-level gb)
@@ -382,10 +381,11 @@
       # going further to handle case of top-level absorb
       (before-next-top-level gb)
       (def end (point gb))
-      [start start-l end]))
+      [start end]))
   # move forward if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
@@ -408,22 +408,22 @@
   [gb]
   (def current (point gb))
   # find bounds of enough text
-  (def [start start-l end]
+  (def [start end]
     (defer (goto-char gb current)
       # find and remember beginning of region to examine
       (begin-of-top-level gb)
       (def start (point gb))
-      (def start-l (gb/line-number gb start))
       # find and remember end of region to examine
       (goto-char gb current)
       (before-next-top-level gb)
       (skip-whitespace-forward gb true)
       (before-next-top-level gb)
       (def end (point gb))
-      [start start-l end]))
+      [start end]))
   # move backward and up if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
@@ -447,20 +447,20 @@
   [gb]
   (def current (point gb))
   # find bounds of enough text
-  (def [start start-l end]
+  (def [start end]
     (defer (goto-char gb current)
       # find and remember beginning of region to examine
       (begin-of-top-level gb)
       (def start (point gb))
-      (def start-l (gb/line-number gb start))
       # find and remember end of region to examine
       (goto-char gb current)
       (before-next-top-level gb)
       (def end (point gb))
-      [start start-l end]))
+      [start end]))
   # move backward and up if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
@@ -503,30 +503,29 @@
 (varfn delete-forward-expr
   [gb]
   (def original (point gb))
-  (var start nil)
-  (var start-l nil)
-  (var end nil)
   # the following skipping is for coping with top-level situations.
   # it will be accounted for later if it turns out the starting point was
   # not at the top-level
   (skip-whitespace-forward gb true)
   (var current (point gb))
   # find bounds of enough text
-  (defer (goto-char gb current)
-    # find and remember beginning of region to examine
-    (begin-of-top-level gb)
-    (set start (point gb))
-    (set start-l (gb/line-number gb start))
-    # find and remember end of region to examine
-    (goto-char gb current)
-    (before-next-top-level gb)
-    (set end (point gb)))
-  # not at top-level, so adjust current to match original
+  (def [start end]
+    (defer (goto-char gb current)
+      # find and remember beginning of region to examine
+      (begin-of-top-level gb)
+      (def start (point gb))
+      # find and remember end of region to examine
+      (goto-char gb current)
+      (before-next-top-level gb)
+      (def end (point gb))
+      [start end]))
+    # not at top-level, so adjust current to match original
   (when (not (< original start))
     (set current original))
   # delete region if appropriate
   (when-let [curr-l (gb/line-number gb current)
              curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
              # 1-based line and column for zipper
              cursor-lc [(inc (- curr-l start-l))
                         (inc curr-c)]
