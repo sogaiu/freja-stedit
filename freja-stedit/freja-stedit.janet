@@ -589,3 +589,51 @@
         [:control :alt :k]
         (comp dh/reset-blink delete-forward-expr))
 
+(varfn select-forward-expr
+  [gb]
+  (def original (point gb))
+  # the following skipping is for coping with top-level situations.
+  # it will be accounted for later if it turns out the starting point was
+  # not at the top-level
+  (skip-whitespace-forward gb true)
+  (var current (point gb))
+  # find bounds of enough text
+  (def [start end]
+    (defer (goto-char gb current)
+      # find and remember beginning of region to examine
+      (begin-of-top-level gb)
+      (def start (point gb))
+      # find and remember end of region to examine
+      (goto-char gb current)
+      (before-next-top-level gb)
+      (def end (point gb))
+      [start end]))
+  # not at top-level, so adjust current to match original
+  (when (not (< original start))
+    (set current original))
+  # doing this here in case the upcoming selection doesn't happen
+  (goto-char gb original)
+  # select region if appropriate
+  (when-let [curr-l (gb/line-number gb current)
+             curr-c (gb/column! gb current)
+             start-l (gb/line-number gb start)
+             # 1-based line and column for zipper
+             cursor-lc [(inc (- curr-l start-l))
+                        (inc curr-c)]
+             region (string/slice (gb/content gb) start end)
+             # 1-based
+             [end-l-1 end-c-1] (se/delete-forward-expr cursor-lc region)
+             # 0-based
+             [end-l-o end-c-o] [(dec end-l-1) (dec end-c-1)]
+             # offset
+             [end-l end-c] [(+ end-l-o start-l) end-c-o]
+             new-end (find-pos-for-line-and-column gb end-l end-c)]
+    # restore cursor position before selecting
+    (goto-char gb original)
+    (gb/select-region gb current new-end))
+  gb)
+
+(put-in dh/gb-binds
+        [:control :alt :shift :k]
+        (comp dh/reset-blink select-forward-expr))
+
