@@ -36,6 +36,8 @@ The [freja editor](https://github.com/saikyun/freja).
 
 * `delete-forward-expr` - `ctrl-alt-k`
 
+* `select-forward-expr` - `ctrl-alt-shift-k`
+
 * `eject-forward` - `ctrl-shift-]` or `ctrl-}`
 
 * `absorb-forward` - `ctrl-shift-0` or `ctrl-)`
