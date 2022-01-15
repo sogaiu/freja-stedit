@@ -627,24 +627,30 @@
   (unless cursor-zloc
     (eprintf "did not find zloc for: [%p %p]" line column)
     (break nil))
-  (if-let [left-zloc (j/left-until cursor-zloc
-                                   |(match (j/node $)
-                                      [:whitespace]
-                                      nil
-                                      #
-                                      [:comment]
-                                      nil
-                                      #
-                                      true))
-           {:bc c :bl l} (j/attrs left-zloc)]
-    [l c]
-    nil))
+  (eprintf "cursor node: %p" (j/node cursor-zloc))
+  (def dest-zloc
+    (match (j/node cursor-zloc)
+      [:whitespace]
+      (j/left-skip-wsc cursor-zloc)
+      #
+      [:comment]
+      (j/left-skip-wsc cursor-zloc)
+      #
+      (let [{:bc bc :bl bl} (j/attrs cursor-zloc)]
+        (if (and (= column bc)
+                 (= line bl))
+          (j/left-skip-wsc cursor-zloc)
+          cursor-zloc))))
+  (when dest-zloc
+    (eprintf "dest-zloc: %p" (j/node dest-zloc))
+    (def {:bc bc :bl bl} (j/attrs dest-zloc))
+    (break [bl bc])))
 
 (comment
 
   (backward-expr [1 7] "(+ 1000 1)")
   # =>
-  '(1 2)
+  [1 4]
 
   (backward-expr [1 1] "(+ 1 11)")
   # =>

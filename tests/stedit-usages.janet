@@ -191,13 +191,13 @@
 
   (backward-expr [1 6] src)
   # =>
-  [1 2]
+  [1 5]
 
   (def src
     "{:x [:a :b :c]}")
 
   (backward-expr [1 14] src)
   # =>
-  [1 9]
+  [1 12]
 
   )
