@@ -130,33 +130,33 @@
 
   (forward-expr [1 1] src)
   # =>
-  [1 6]
+  [1 3]
 
   (def src
     "[:a :b]")
 
   (forward-expr [1 1] src)
   # =>
-  nil
+  [1 8]
 
   (def src
     "[:a :b] :c")
 
-  (forward-expr [1 1] src)
+  (forward-expr [1 8] src)
   # =>
   [1 11]
 
   (def src
     "[:a :b :c]")
 
-  (forward-expr [1 6] src)
+  (forward-expr [1 7] src)
   # =>
   [1 10]
 
   (def src
     "{:x [:a :b :c]}")
 
-  (forward-expr [1 9] src)
+  (forward-expr [1 11] src)
   # =>
   [1 14]
 
