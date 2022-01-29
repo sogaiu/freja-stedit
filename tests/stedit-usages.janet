@@ -160,6 +160,21 @@
   # =>
   [1 14]
 
+  (def src
+    ``
+    (import freja/new_gap_buffer :as gb)
+    (import freja/state)
+    (import freja/default-hotkeys :as dh)
+    ``)
+
+  (forward-expr [1 1] src)
+  # =>
+  [1 37]
+
+  (forward-expr [1 37] src)
+  # =>
+  [2 21]
+
   )
 
 # backward-expr
@@ -199,5 +214,45 @@
   (backward-expr [1 14] src)
   # =>
   [1 12]
+
+  )
+
+# forward-atom
+(comment
+
+  (def src
+    ``
+    (import freja/new_gap_buffer :as gb)
+    (import freja/state)
+    (import freja/default-hotkeys :as dh)
+    ``)
+
+  (forward-atom [1 1] src)
+  # =>
+  [1 8]
+
+  (forward-atom [1 8] src)
+  # =>
+  [1 29]
+
+  (forward-atom [1 29] src)
+  # =>
+  [1 33]
+
+  (forward-atom [1 33] src)
+  # =>
+  [1 36]
+
+  (forward-atom [1 36] src)
+  # =>
+  [2 8]
+
+  (forward-atom [2 8] src)
+  # =>
+  [2 20]
+
+  (forward-atom [2 20] src)
+  # =>
+  [3 8]
 
   )
