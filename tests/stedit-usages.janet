@@ -1,7 +1,7 @@
-(import ../stedit/location :as l)
-(import ../stedit/zipper :as j)
-(import ../stedit/loc-jipper :as j)
-(import ../stedit/stedit :prefix "")
+(import ../freja-stedit/stedit/location :as l)
+(import ../freja-stedit/stedit/zipper :as j)
+(import ../freja-stedit/stedit/loc-jipper :as j)
+(import ../freja-stedit/stedit/stedit :prefix "")
 
 # container?
 (comment

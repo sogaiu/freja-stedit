@@ -2,3 +2,7 @@
   :name "freja-stedit"
   :url "https://github.com/sogaiu/freja-stedit"
   :repo "git+https://github.com/sogaiu/freja-stedit")
+
+(declare-source
+  :source ["freja-stedit"])
+

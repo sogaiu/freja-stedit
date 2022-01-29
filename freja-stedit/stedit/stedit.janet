@@ -908,3 +908,212 @@
 
   )
 
+(defn transpose-exprs-old
+  [[cursor-l cursor-c] src]
+  (var curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "start node: %p" (j/node curr-zloc))
+  (def cursor-zloc
+    (find-zloc-for-lc curr-zloc [cursor-l cursor-c]))
+  (unless cursor-zloc
+    (eprintf "did not find expr for cursor")
+    (break nil))
+  (eprintf "cursor node: %p" (j/node cursor-zloc))
+  # find current non-whitespace, non-comment expr
+  (def right-zloc
+    (match (j/node cursor-zloc)
+      [:comment]
+      (do
+        (eprintf "invocation on comment unsupported")
+        (break nil))
+      #
+      [:whitespace]
+      (if-let [new-right-zloc (j/right-skip-wsc cursor-zloc)]
+        new-right-zloc
+        (do
+          (eprintf "failed to find non-whitespace, non-comment (1)")
+          (break nil)))
+      #
+      cursor-zloc))
+  (eprintf "right node: %p" (j/node right-zloc))
+  (def end-attrs
+    (j/attrs right-zloc))
+  # check if there is a previous non-whitespace, non-comment expr
+  (var temp-zloc (j/left cursor-zloc))
+  (unless temp-zloc
+    (eprintf "did not find expr to the left of the cursor")
+    (break nil))
+  # how many right moves it takes to get from left-zloc to right-zloc
+  (var n-nodes-to-right 0)
+  (eprintf "temp-zloc: %p" (j/node temp-zloc))
+  (def left-zloc
+    (match (j/node temp-zloc)
+      [:comment]
+      (do
+        (eprintf "comment to left of cursor not supported")
+        (break nil))
+      #
+      [:whitespace]
+      (if-let [[new-left-zloc n-moved]
+               (j/left-skip-wsc-with-count temp-zloc)]
+        (do
+          (eprintf "skipped over %p nodes" n-moved)
+          # moved left once before left-skip-wsc-with-count, thus `inc`
+          (+= n-nodes-to-right (inc n-moved))
+          new-left-zloc)
+        (do
+          (eprintf "failed to find non-whitespace, non-comment (2)")
+          (break nil)))
+      #
+      (do
+        (eprintf "neither comment nor whitespace")
+        # XXX: calculate how many nodes to right, right-zloc is, that
+        #      is what n-nodes-to-right should be
+        # XXX: hack -- may not be right always
+        (set n-nodes-to-right 2)
+        temp-zloc)))
+  (eprintf "left node: %p" (j/node left-zloc))
+  (eprintf "need to remove %p nodes" n-nodes-to-right)
+  # swap
+  # XXX: doesn't work across newlines properly?
+  (set curr-zloc
+       (-> left-zloc
+           # do the remove-right-n before changing the zipper,
+           # otherwise may not work properly
+           (j/remove-right-n n-nodes-to-right)
+           (j/insert-left (j/node right-zloc))
+           (j/insert-left [:whitespace @{} " "])))
+  # determine end position of latter expr
+  # XXX: not sure if this quite right
+  (def new-cursor
+    [(end-attrs :el)
+     (end-attrs :ec)])
+  (eprintf "new-cursor: %p" new-cursor)
+  # replacement text
+  (def new-text
+    (-> curr-zloc
+        j/root
+        l/code))
+  (eprintf "new-text: %p" new-text)
+  [new-text new-cursor])
+
+# XXX: try new idea
+(defn transpose-exprs
+  [[cursor-l cursor-c] src]
+  (var curr-zloc
+    (-> (l/ast src)
+        j/zip-down))
+  (eprintf "start node: %p" (j/node curr-zloc))
+  (def cursor-zloc
+    (find-zloc-for-lc curr-zloc [cursor-l cursor-c]))
+  (unless cursor-zloc
+    (eprintf "did not find expr for cursor")
+    (break nil))
+  (eprintf "cursor node: %p" (j/node cursor-zloc))
+  # find current non-whitespace, non-comment expr
+  (def right-zloc
+    (match (j/node cursor-zloc)
+      [:comment]
+      (do
+        (eprintf "invocation on comment unsupported")
+        (break nil))
+      #
+      [:whitespace]
+      (if-let [new-right-zloc (j/right-skip-wsc cursor-zloc)]
+        new-right-zloc
+        (do
+          (eprintf "failed to find non-whitespace, non-comment (1)")
+          (break nil)))
+      #
+      cursor-zloc))
+  (eprintf "right node: %p" (j/node right-zloc))
+  (def end-attrs
+    (j/attrs right-zloc))
+  # check if there is a previous non-whitespace, non-comment expr
+  (var temp-zloc (j/left cursor-zloc))
+  (unless temp-zloc
+    (eprintf "did not find expr to the left of the cursor")
+    (break nil))
+  # how many right moves it takes to get from left-zloc to right-zloc
+  (var n-nodes-to-right 0)
+  (eprintf "temp-zloc: %p" (j/node temp-zloc))
+  (def left-zloc
+    (match (j/node temp-zloc)
+      [:comment]
+      (do
+        (eprintf "comment to left of cursor not supported")
+        (break nil))
+      #
+      [:whitespace]
+      (if-let [[new-left-zloc n-moved]
+               (j/left-skip-wsc-with-count temp-zloc)]
+        (do
+          (eprintf "skipped over %p nodes" n-moved)
+          # moved left once before left-skip-wsc-with-count, thus `inc`
+          (+= n-nodes-to-right (inc n-moved))
+          new-left-zloc)
+        (do
+          (eprintf "failed to find non-whitespace, non-comment (2)")
+          (break nil)))
+      #
+      (do
+        (eprintf "neither comment nor whitespace")
+        # XXX: calculate how many nodes to right, right-zloc is, that
+        #      is what n-nodes-to-right should be
+        # XXX: hack -- may not be right always
+        (set n-nodes-to-right 2)
+        temp-zloc)))
+  (eprintf "left node: %p" (j/node left-zloc))
+  (eprintf "need to remove %p nodes" n-nodes-to-right)
+  # swap
+  # XXX: doesn't work across newlines properly?
+  (set curr-zloc
+       (-> left-zloc
+           # do the remove-right-n before changing the zipper,
+           # otherwise may not work properly
+           (j/remove-right-n n-nodes-to-right)
+           (j/insert-left (j/node right-zloc))
+           (j/insert-left [:whitespace @{} " "])))
+  # determine end position of latter expr
+  # XXX: not sure if this quite right
+  (def new-cursor
+    [(end-attrs :el)
+     (end-attrs :ec)])
+  (eprintf "new-cursor: %p" new-cursor)
+  # replacement text
+  (def new-text
+    (-> curr-zloc
+        j/root
+        l/code))
+  (eprintf "new-text: %p" new-text)
+  [new-text new-cursor])
+
+(comment
+
+  (transpose-exprs [1 4] "(+ 1 2)")
+  # =>
+  '("(1 + 2)" (1 5))
+
+  (transpose-exprs [1 6] "(+ 1 2)")
+  # =>
+  '("(+ 2 1)" (1 7))
+
+  (transpose-exprs [1 11] "(+ (- 2 1) (+ 3 2))")
+  # =>
+  '("(+ (+ 3 2) (- 2 1))" (1 19))
+
+  # XXX: not working yet
+  (transpose-exprs [1 11]
+                   ``
+                   (+ (- 2 1)
+                      (+ 3 2))
+                   ``)
+  # =>
+  [``
+   (+ (+ 3 2)
+      (- 2 1))
+   ``
+   [2 11]]
+
+  )

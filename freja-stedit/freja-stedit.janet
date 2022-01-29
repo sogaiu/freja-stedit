@@ -2,7 +2,7 @@
 (import freja/state)
 (import freja/default-hotkeys :as dh)
 
-(import ../stedit/stedit :as se)
+(import ./stedit/stedit :as se)
 
 # XXX: for investigation
 (defn current-gb
