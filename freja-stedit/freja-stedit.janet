@@ -207,11 +207,6 @@
     (goto-char gb current))
   gb)
 
-(dh/set-key dh/gb-binds
-            # XXX: this is control right paren
-            [:control :shift :0]
-            (comp dh/reset-blink absorb-forward))
-
 (varfn find-pos-for-line-and-column
   [gb line column]
   # goto line
@@ -277,11 +272,6 @@
                (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
-(dh/set-key dh/gb-binds
-            # XXX: this is control right curly brace
-            [:control :shift :right-bracket]
-            (comp dh/reset-blink eject-forward))
-
 (varfn forward-expr
   [gb]
   (def current (point gb))
@@ -319,10 +309,6 @@
                (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :f]
-            (comp dh/reset-blink forward-expr))
-
 (varfn backward-expr
   [gb]
   (def current (point gb))
@@ -358,10 +344,6 @@
     (goto-char gb
                (find-pos-for-line-and-column gb new-l new-c)))
   gb)
-
-(dh/set-key dh/gb-binds
-            [:control :alt :b]
-            (comp dh/reset-blink backward-expr))
 
 (varfn forward-atom
   [gb]
@@ -400,10 +382,6 @@
                (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :shift :f]
-            (comp dh/reset-blink forward-atom))
-
 # XXX: can have issues within a form on the first line of the file
 (varfn backward-atom
   [gb]
@@ -441,10 +419,6 @@
                (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :shift :b]
-            (comp dh/reset-blink backward-atom))
-
 (varfn forward-down-expr
   [gb]
   (def current (point gb))
@@ -480,10 +454,6 @@
                (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :d]
-            (comp dh/reset-blink forward-down-expr))
-
 (varfn backward-up-expr
   [gb]
   (def current (point gb))
@@ -517,29 +487,17 @@
                (find-pos-for-line-and-column gb new-l new-c)))
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :u]
-            (comp dh/reset-blink backward-up-expr))
-
 (varfn backward-start-of-top-level
   [gb]
   (gb/backward-char gb)
   (begin-of-top-level gb)
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :a]
-            (comp dh/reset-blink backward-start-of-top-level))
-
 (varfn forward-end-of-top-level
   [gb]
   (gb/forward-char gb)
   (before-next-top-level gb)
   gb)
-
-(dh/set-key dh/gb-binds
-            [:control :alt :e]
-            (comp dh/reset-blink forward-end-of-top-level))
 
 (varfn delete-forward-expr
   [gb]
@@ -585,10 +543,6 @@
   (goto-char gb original)
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :k]
-            (comp dh/reset-blink delete-forward-expr))
-
 (varfn select-forward-expr
   [gb]
   (def original (point gb))
@@ -633,8 +587,5 @@
     (gb/select-region gb current new-end))
   gb)
 
-(dh/set-key dh/gb-binds
-            [:control :alt :shift :k]
-            (comp dh/reset-blink select-forward-expr))
 
 
