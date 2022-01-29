@@ -46,12 +46,9 @@
 # XXX: review
 (varfn skip-whitespace-forward
   ``
-  Skips forward while there is whitespace.  If optional argument
-  `nl-too` is truthy, also skip newlines.  Otherwise do not skip
-  newlines.
+  Skips forward while there is whitespace.
   ``
-  [gb &opt nl-too]
-  (default nl-too false)
+  [gb]
   (def {:caret caret} gb)
 
   (var target-i caret)
@@ -62,24 +59,21 @@
       (fn []
         (gb/index-char-start gb start-i))))
 
-  (when (and (not nl-too)
-             (= (chr "\n") (char-after gb caret)))
-    (break nil))
-
   (loop [[i c] :iterate (resume f)]
     (when (and (not= (chr " ") c)
-               (not= (chr "\t") c))
-      (when (and nl-too
-                 (not= (chr "\n") c))
-        (set target-i i)
-        (break))))
+               (not= (chr "\t") c)
+               (not= (chr "\n") c))
+          (set target-i i)
+          (break)))
 
   (if (> target-i (gb/gb-length gb))
     nil
     (gb/move-n gb (- target-i start-i))))
 
 (varfn skip-whitespace-backward
-  "Skips backward while there is whitespace."
+  ``
+  Skips backward while there is whitespace.
+  ``
   [gb]
   (def {:caret caret} gb)
 
@@ -95,9 +89,9 @@
         (gb/index-char-backward-start gb start-i))))
 
   (loop [[i c] :iterate (resume f)]
-    (when (and (not= (chr "\n") c)
-               (not= (chr " ") c)
-               (not= (chr "\t") c))
+    (when (and (not= (chr " ") c)
+               (not= (chr "\t") c)
+               (not= (chr "\n") c))
       (set target-i i)
       (break)))
 
@@ -106,7 +100,7 @@
 
   # XXX: does this cover all cases?
   (unless (= start-i target-i)
-    (gb/move-n gb (inc diff))))
+    (gb/move-n gb diff)))
 
 (defn begin-of-top-level-char?
   [char]
@@ -431,7 +425,7 @@
       # find and remember end of region to examine
       (goto-char gb current)
       (before-next-top-level gb)
-      (skip-whitespace-forward gb true)
+      (skip-whitespace-forward gb)
       (before-next-top-level gb)
       (def end (point gb))
       [start end]))
@@ -505,7 +499,7 @@
   # the following skipping is for coping with top-level situations.
   # it will be accounted for later if it turns out the starting point was
   # not at the top-level
-  (skip-whitespace-forward gb true)
+  (skip-whitespace-forward gb)
   (var current (point gb))
   # find bounds of enough text
   (def [start end]
@@ -549,7 +543,7 @@
   # the following skipping is for coping with top-level situations.
   # it will be accounted for later if it turns out the starting point was
   # not at the top-level
-  (skip-whitespace-forward gb true)
+  (skip-whitespace-forward gb)
   (var current (point gb))
   # find bounds of enough text
   (def [start end]
