@@ -877,7 +877,7 @@
   (var found-target nil)
   # if at an atom already, could be end of search
   (when (atom? temp-zloc)
-    (def {:ec ec :el el}
+    (def {:ec ec}
       (j/attrs temp-zloc))
     (when (not= ec column)
       (set found-target true)))
