@@ -1016,14 +1016,12 @@
   # not a container
   (eprintf "cursor not at a container: %p" (j/node cursor-zloc))
   (def forward-zloc
-    (j/right-skip-wsc cursor-zloc))
+    (j/right-until cursor-zloc
+                   |(container? $)))
   (unless forward-zloc
-    (eprintf "did not find non-wsc node in forward direction")
+    (eprintf "did not find container node in forward direction")
     (break nil))
   (eprintf "forward-zloc: %p" (j/node forward-zloc))
-  (unless (container? forward-zloc)
-    (eprintf "node in forward direction not a container")
-    (break nil))
   (if (j/has-children? (j/node forward-zloc))
     (do
       (def {:bc bc :bl bl}
@@ -1058,6 +1056,13 @@
   (forward-down-expr [1 12] src)
   # =>
   nil
+
+  (def src
+    "[:a :b [:x]]")
+
+  (forward-down-expr [1 2] src)
+  # =>
+  [1 9]
 
   )
 
