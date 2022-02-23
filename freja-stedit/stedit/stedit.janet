@@ -65,10 +65,24 @@
 
   (-> (find-zloc-for-lc (-> (l/ast src)
                             j/zip-down)
+                        [6 5])
+      j/node)
+  # =>
+  '(:whitespace @{:bc 5 :bl 6 :ec 6 :el 6} " ")
+
+  (-> (find-zloc-for-lc (-> (l/ast src)
+                            j/zip-down)
                         [6 6])
       j/node)
   # =>
   '(:symbol @{:bc 6 :bl 6 :ec 7 :el 6} "a")
+
+  (-> (find-zloc-for-lc (-> (l/ast src)
+                            j/zip-down)
+                        [6 7])
+      j/node)
+  # =>
+  '(:whitespace @{:bc 7 :bl 6 :ec 8 :el 6} " ")
 
   (-> (find-zloc-for-lc (-> (l/ast "[]")
                             j/zip-down)
@@ -756,6 +770,97 @@
 
   )
 
+(defn atom?
+  ``
+  Returns true if `zloc` is an atom node, false otherwise.
+
+  An atom node is one of the following types:
+
+  * number
+  * constant
+  * buffer
+  * string
+  * long-string
+  * long-buffer
+  * keyword
+  * symbol
+  ``
+  [zloc]
+  (->> (first (j/node zloc))
+       (get {:number true
+             :constant true
+             :buffer true
+             :string true
+             :long-string true
+             :long-buffer true
+             :keyword true
+             :symbol true})
+       truthy?))
+
+(comment
+
+  (-> (l/ast "8")
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast "true")
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast `@""`)
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast `"hi there"`)
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast "``long string``")
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast "@``long buffer``")
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast "# a comment")
+      j/zip-down
+      atom?)
+  # =>
+  false
+
+  (-> (l/ast ":fun")
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast "my-symbol")
+      j/zip-down
+      atom?)
+  # =>
+  true
+
+  (-> (l/ast " ")
+      j/zip-down
+      atom?)
+  # =>
+  false
+
+  )
+
 (defn forward-atom
   [[line column] src]
   (def curr-zloc
@@ -768,18 +873,26 @@
     (eprintf "did not find zloc for cursor")
     (break nil))
   (var temp-zloc cursor-zloc)
+  (eprintf "temp-zloc node: %p" (j/node temp-zloc))
   (var found-target nil)
-  (while (not (j/end? temp-zloc))
-    (eprintf "temp-zloc node: %p" (j/node temp-zloc))
-    (set temp-zloc
-         (j/df-next temp-zloc))
-    (def node-type
-      (first (j/node temp-zloc)))
-    (unless (or (= :whitespace node-type)
-                (= :comment node-type)
-                (container? temp-zloc))
-      (set found-target true)
-      (break)))
+  # if at an atom already, could be end of search
+  (when (atom? temp-zloc)
+    (def {:ec ec :el el}
+      (j/attrs temp-zloc))
+    (when (not= ec column)
+      (set found-target true)))
+  # search not finished
+  (when (not found-target)
+    (while (not (j/end? temp-zloc))
+      (set temp-zloc
+           (j/df-next temp-zloc))
+      (def node-type
+        (first (j/node temp-zloc)))
+      (unless (or (= :whitespace node-type)
+                  (= :comment node-type)
+                  (container? temp-zloc))
+        (set found-target true)
+        (break))))
   (when found-target
     (def {:ec ec :el el}
       (j/attrs temp-zloc))
@@ -787,9 +900,25 @@
 
 (comment
 
-  (forward-atom [1 2] "[:a [:b :c]]")
+  (forward-atom [1 2] "[:ant :bee]")
+  # =>
+  [1 6]
+
+  (forward-atom [1 4] "[:a [:b :c]]")
   # =>
   [1 8]
+
+  (forward-atom [1 1] "(a)\n:x")
+  # =>
+  [1 3]
+
+  (forward-atom [1 2] "(a)\n:x")
+  # =>
+  [1 3]
+
+  (forward-atom [1 3] "(a)\n:x")
+  # =>
+  [2 3]
 
   )
 
