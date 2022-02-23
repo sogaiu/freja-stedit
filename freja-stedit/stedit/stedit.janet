@@ -934,29 +934,53 @@
     (eprintf "did not find zloc for cursor")
     (break nil))
   (var temp-zloc cursor-zloc)
+  (eprintf "temp-zloc node: %p" (j/node temp-zloc))
   (var found-target nil)
-  # XXX: does this work in reverse?
-  (while (not (j/end? temp-zloc))
-    (eprintf "temp-zloc node: %p" (j/node temp-zloc))
-    (set temp-zloc
-         (j/df-prev temp-zloc))
-    (def node-type
-      (first (j/node temp-zloc)))
-    (unless (or (= :whitespace node-type)
-                (= :comment node-type)
-                (container? temp-zloc))
-      (set found-target true)
-      (break)))
-  (when found-target
+  # if at an atom already, could be end of search
+  (when (atom? temp-zloc)
+    (def {:bc bc}
+      (j/attrs temp-zloc))
+    (when (not= bc column)
+      (set found-target true)))
+  # search not finished
+  (when (not found-target)
+    # XXX: does this work in reverse?
+    (while (not (j/end? temp-zloc))
+      (set temp-zloc
+           (j/df-prev temp-zloc))
+      (def node-type
+        (first (j/node temp-zloc)))
+      (unless (or (= :whitespace node-type)
+                  (= :comment node-type)
+                  (container? temp-zloc))
+        (set found-target true)
+        (break))))
+    (when found-target
     (def {:bc bc :bl bl}
       (j/attrs temp-zloc))
     [bl bc]))
 
 (comment
 
+  (backward-atom [1 6] "[:ant :bee]")
+  # =>
+  [1 2]
+
   (backward-atom [1 6] "[:a [:b :c]]")
   # =>
   [1 2]
+
+  (backward-atom [2 3] ":x\n(a)")
+  # =>
+  [2 2]
+
+  (backward-atom [2 2] ":x\n(a)")
+  # =>
+  [1 1]
+
+  (backward-atom [2 1] ":x\n(a)")
+  # =>
+  [1 1]
 
   )
 
