@@ -1,6 +1,5 @@
 (import freja/new_gap_buffer :as gb)
 (import freja/state)
-(import freja/default-hotkeys :as dh)
 
 (import ./stedit/stedit :as se)
 
